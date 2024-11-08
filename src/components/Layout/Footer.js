@@ -1,6 +1,6 @@
 import React from 'react'
 import { Facebook, Instagram, Twitter, YouTube } from '@mui/icons-material';
-import poster from '../../assets/images/poster-footer.png';
+import poster from '../../assets/images/poster.png';
 
 const Footer = () => {
   return (
