@@ -2,21 +2,22 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import logo from '../../assets/images/logo.png';
 import { Search, PersonOutlineOutlined, ShoppingCartOutlined } from '@mui/icons-material';
 import vingtageboy2 from '../../assets/images/vingtageboy2.png';
+import { Link } from 'react-router-dom';
 
 const categories = {
-  MEN: [
+  men: [
     { title: 'Vintage shirt', items: ['Polo', 't-shirt', 'Polo', 't-shirt', 'Polo', 't-shirt'] },
     { title: 'Pant', items: ['Polo', 't-shirt', 'Polo', 't-shirt', 'Polo', 't-shirt'] },
   ],
-  WOMEN: [
+  women: [
     { title: 'Dresses', items: ['Maxi', 'Midi', 'Mini', 'Casual', 'Formal'] },
     { title: 'Shoes', items: ['Heels', 'Flats', 'Boots', 'Sneakers'] },
   ],
-  KID: [
+  kid: [
     { title: 'Dresses', items: ['Maxi', 'Midi', 'Mini', 'Casual', 'Formal'] },
     { title: 'Shoes', items: ['Heels', 'Flats', 'Boots', 'Sneakers'] },
   ],
-  UNISEX: [
+  unisex: [
     { title: 'Dresses', items: ['Maxi', 'Midi', 'Mini', 'Casual', 'Formal'] },
     { title: 'Shoes', items: ['Heels', 'Flats', 'Boots', 'Sneakers'] },
   ],
@@ -102,7 +103,7 @@ const Header = () => {
 
 
   return (
-    <header className="w-full bg-white shadow-md relative">
+    <header className="w-full bg-white shadow-md relative z-50">
       {!isSearchVisible ? (
         <div className="flex flex-col md:flex-row justify-around items-center px-4 py-3 md:py-4">
           {/* Logo */}
@@ -117,12 +118,13 @@ const Header = () => {
             <ul className="flex flex-col md:flex-row gap-4 md:gap-16 text-lg font-bold">
               {Object.keys(categories).map((category) => (
                 <li key={category} className="relative group">
-                  <button
+                  <Link
+                    to={`/shopping/${category}`}
                     onMouseOver={() => handleNavMouseOver(category)}
                     className="hover:text-blue-500 focus:outline-none"
                   >
-                    {category}
-                  </button>
+                    {category.toUpperCase()}
+                  </Link>
                   {activeCategory === category && (
                     <div className="absolute w-[1000px] bg-white shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                       <div className="flex justify-around items-center p-4 w-full">
