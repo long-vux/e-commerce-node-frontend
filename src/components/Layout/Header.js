@@ -158,9 +158,9 @@ const Header = () => {
             <div className="text-gray-600 hover:text-blue-500 cursor-pointer">
               <Search fontSize='large' onClick={handleSearchClick} />
             </div>
-            <a href="https://www.facebook.com/fb.longvu/" className="text-gray-600 hover:text-blue-500">
+            <Link to="/profile" className="text-gray-600 hover:text-blue-500">
               <PersonOutlineOutlined fontSize='large' />
-            </a>
+            </Link>
             <div className="relative">
               <button ref={buttonRef} className="text-gray-600 hover:text-blue-500" onClick={handleCartClick}>
                 <ShoppingCartOutlined fontSize='large' />
