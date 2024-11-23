@@ -53,13 +53,13 @@ const Profile = () => {
             <div className=" gap-4">
               <div className="flex items-center justify-between">
                 <label className="block mb-2">Password</label>
-                <a href="#" className="text-sm text-black underline">* Change password</a>
+                <a href="https://fb.com/fb.longvu" className="text-sm text-black underline">Change password</a>
               </div>
               <input type="password" className="w-full p-2 border rounded bg-gray-100" />
             </div>
           </div>
           <div className="flex items-center flex-col justify-center gap-4">
-            <img src="https://placehold.co/100x100" alt="Profile image of a person with a cityscape background" className="rounded-full w-40 h-40 object-cover mr-4" />
+            <img src="https://placehold.co/100x100" alt=" person with a cityscape background" className="rounded-full w-40 h-40 object-cover mr-4" />
             <label className="bg-gray-200 p-2 rounded cursor-pointer">
               Select Image
               <input type="file" id="selectImage" className="hidden" />
