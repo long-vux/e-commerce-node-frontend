@@ -1,23 +1,51 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
+import { GoogleLogin } from '@react-oauth/google';
+import { jwtDecode } from 'jwt-decode'
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const Login = () => {
-  // const dbHost = 'http://localhost:5214/'
-
-
+  const apiUrl = process.env.REACT_APP_API_URL
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
-
+  const user = sessionStorage.getItem('user')
   const navigate = useNavigate()
+
+  useEffect(() => {
+    if (user) {
+      navigate('/')
+    }
+  }, [user, navigate])
+
+  const handleLoginSuccess = async (response) => {
+    const token = response.credential
+    try {
+      const response = await axios.post(apiUrl + 'api/auth/googleLogin', { token })
+      const newToken = JSON.stringify(response.data.token)
+      const decodedToken = jwtDecode(newToken)
+      sessionStorage.setItem('user', JSON.stringify(decodedToken))
+      toast.success('Login successful')
+      navigate('/')
+    } catch (error) {
+      console.log(error)
+      toast.error('Login failed')
+    }
+  };
+
+  const handleLoginFailure = (error) => {
+    console.log(error)
+    toast.error('Login failed')
+  };
 
   const handleSubmit = async e => {
     e.preventDefault()
 
     try {
       const response = await axios.post(
-        dbHost + 'api/account/login',
+        apiUrl + 'api/auth/login',
         { email, password },
         {
           headers: {
@@ -30,10 +58,11 @@ const Login = () => {
         sessionStorage.setItem('user', JSON.stringify(response.data))
         setTimeout(() => {
           sessionStorage.removeItem('user')
-          alert('Session expired. Please log in again.')
+          toast.info('Session expired. Please log in again.')
           navigate('/login') // Redirect to login page after session expires
-        }, 24*60*60*1000) // 20 seconds in milliseconds
-        navigate('/admin/dashboard')
+        }, 24 * 60 * 60 * 1000) // 20 seconds in milliseconds
+        navigate('/')
+        toast.success('Login successful')
       }
     } catch (error) {
       if (error.response.status === 401) {
@@ -64,7 +93,7 @@ const Login = () => {
               className='border border-1 border-gray-300 rounded-md p-2'
             />
           </div>
-          <div className='flex flex-col mb-2'>
+          <div className='flex flex-col mb-4'>
             <label className='text-sm font-bold mb-1'>Password</label>
             <input
               type='password'
@@ -82,10 +111,14 @@ const Login = () => {
 
           <button
             type='submit'
-            className='bg-[#1D4567] text-white p-2 rounded-md'
+            className='bg-[#1D4567] text-white p-2 mb-4 rounded-md'
           >
             <span className='font-bold'>Log in</span>
           </button>
+          <GoogleLogin
+            onSuccess={handleLoginSuccess}
+            onError={handleLoginFailure}
+          />
         </form>
 
         {/* SIGN UP */}

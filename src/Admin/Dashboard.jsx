@@ -9,7 +9,7 @@ import LineChart from '../components/admin/dashboard/LineChart'
 const Dashboard = () => {
   // get the room image and pass it into room preview
 
-  const DB_HOST = process.env.REACT_APP_DB_HOST
+  const apiUrl = process.env.REACT_APP_API_URL
 
   const [roomImages, setRoomImages] = useState([])
   const navigate = useNavigate()
@@ -21,7 +21,7 @@ const Dashboard = () => {
   useEffect(() => {
     const getRoomImages = async () => {
       try {
-        const response = await fetch(DB_HOST + 'api/Room')
+        const response = await fetch(apiUrl + 'api/Room')
         if (!response.ok) {
           throw new Error('Network response was not ok')
         }
@@ -39,7 +39,7 @@ const Dashboard = () => {
     }
 
     getRoomImages()
-  }, [DB_HOST])
+  }, [apiUrl])
 
 
   return (
@@ -60,8 +60,8 @@ const Dashboard = () => {
             {roomImages.slice(2, 7).map((image, index) => (
               <img
                 key={index}
-                src={DB_HOST + image}
-                alt={`Room image ${index}`}
+                src={image}
+                alt={`Room ${index}`}
                 className='w-[140px] h-[100px] rounded-md cursor-pointer'
                 onClick={handleImageClick}
               />
