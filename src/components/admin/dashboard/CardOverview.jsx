@@ -8,15 +8,15 @@ const CardOverview = ({ isCheckin, isCheckout, isRoomAvailable, isReservation })
     const [roomAvailable, setRoomAvailable] = useState(0)
     const [reservation, setReservation] = useState(0)
 
-    const DB_HOST = process.env.REACT_APP_DB_HOST
-    
+    const apiUrl = process.env.REACT_APP_API_URL
+    // eslint-disable-next-line
     useEffect(() => {
       const fetchData = async () => {
         try {
-          const responseCheckin = await axios.get(`${DB_HOST}api/Booking/today-check-in`)
-          const responseCheckOut = await axios.get(`${DB_HOST}api/Booking/today-check-out`)
-          const responseRoomAvailable = await axios.get(`${DB_HOST}api/Room/room-available`)
-          const responseReservation = await axios.get(`${DB_HOST}api/Booking/reservation`)
+          const responseCheckin = await axios.get(`${apiUrl}api/Booking/today-check-in`)
+          const responseCheckOut = await axios.get(`${apiUrl}api/Booking/today-check-out`)
+          const responseRoomAvailable = await axios.get(`${apiUrl}api/Room/room-available`)
+          const responseReservation = await axios.get(`${apiUrl}api/Booking/reservation`)
           setCheckin(responseCheckin.data)
           setCheckout(responseCheckOut.data)
           setRoomAvailable(responseRoomAvailable.data)
@@ -27,7 +27,7 @@ const CardOverview = ({ isCheckin, isCheckout, isRoomAvailable, isReservation })
         }
       }
       fetchData()
-    }, [])
+    }, [apiUrl])
     
 
 
