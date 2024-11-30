@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import axios from 'axios'
+import axios from '../utils/axiosInstance'
 import { useNavigate } from 'react-router-dom'
 import { GoogleLogin } from '@react-oauth/google';
 import { jwtDecode } from 'jwt-decode'
@@ -20,7 +20,7 @@ const Login = () => {
     }
   }, [user, navigate])
 
-  const handleLoginSuccess = async (response) => {
+  const handleGoogleLoginSuccess = async (response) => {
     const token = response.credential
     try {
       const response = await axios.post(apiUrl + 'api/auth/googleLogin', { token })
@@ -35,7 +35,7 @@ const Login = () => {
     }
   };
 
-  const handleLoginFailure = (error) => {
+  const handleGoogleLoginFailure = (error) => {
     console.log(error)
     toast.error('Login failed')
   };
@@ -45,17 +45,13 @@ const Login = () => {
 
     try {
       const response = await axios.post(
-        apiUrl + 'api/auth/login',
-        { email, password },
-        {
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        }
+        apiUrl + 'api/auth/login', { email, password }
       )
 
       if (response.status === 200) {
-        sessionStorage.setItem('user', JSON.stringify(response.data))
+        const newToken = JSON.stringify(response.data.token)
+        const decodedToken = jwtDecode(newToken)
+        sessionStorage.setItem('user', JSON.stringify(decodedToken))
         setTimeout(() => {
           sessionStorage.removeItem('user')
           toast.info('Session expired. Please log in again.')
@@ -63,21 +59,23 @@ const Login = () => {
         }, 24 * 60 * 60 * 1000) // 20 seconds in milliseconds
         navigate('/')
         toast.success('Login successful')
-      }
+      } 
     } catch (error) {
-      if (error.response.status === 401) {
-        setError(error.response.data)
+      console.log('error', error)
+      if (error.response?.status === 403) {
+        setError(error.response.data?.message)
+      } else if (error.response?.status === 401) {
+        setError(error.response.data?.message)
       } else {
-        setError(error.response.data.errors.Email[0] || error.response.data.errors.Password[0])
+        setError(error.response?.data?.errors?.Email[0] || error.response?.data?.errors?.Password[0])
       }
-      console.error('Error:', error.response)
     }
   }
 
   return (
     <div className='flex flex-row justify-around gap-20 items-center h-[600px]'>
       <div className='w-2/5'>
-        {/* FORM */}
+        {/* LOGIN FORM */}
         <form
           onSubmit={handleSubmit}
           className='flex flex-col p-4 rounded-lg ml-20 border border-1 border-gray-300 mb-2'
@@ -89,6 +87,7 @@ const Login = () => {
             <input
               type='email'
               value={email}
+              required
               onChange={e => setEmail(e.target.value)}
               className='border border-1 border-gray-300 rounded-md p-2'
             />
@@ -98,6 +97,7 @@ const Login = () => {
             <input
               type='password'
               value={password}
+              required
               onChange={e => setPassword(e.target.value)}
               className='border border-1 border-gray-300 rounded-md p-2'
             />
@@ -115,9 +115,10 @@ const Login = () => {
           >
             <span className='font-bold'>Log in</span>
           </button>
+          {/* GOOGLE LOGIN */}
           <GoogleLogin
-            onSuccess={handleLoginSuccess}
-            onError={handleLoginFailure}
+            onSuccess={handleGoogleLoginSuccess}
+            onError={handleGoogleLoginFailure}
           />
         </form>
 
