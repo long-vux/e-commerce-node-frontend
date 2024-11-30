@@ -5,6 +5,7 @@ import Header from '../components/Layout/Header';
 import Footer from '../components/Layout/Footer';
 import Register from '../pages/Register';
 import Profile from '../pages/Profile';
+import VerifyEmail from '../pages/VerifyEmail';
 // import ErrorPage from '../pages/ErrorPage';
 
 const MainRoutes = () => (
@@ -15,6 +16,7 @@ const MainRoutes = () => (
       <Route path="/signup" element={<Register />} />
       <Route path="/profile" element={<Profile />} />
       <Route path="/" element={<Home />} />
+      <Route path="/verify-email/:userId/:token" element={<VerifyEmail />} />
     </Routes>
     <Footer />
   </>
