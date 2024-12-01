@@ -16,3 +16,40 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+
+/* UTILITIES */
+
+.center{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.text-shadow-xl {
+  text-shadow: 
+    1px 1px 0 #000,  
+    -1px -1px 0 #000,  
+    1px -1px 0 #000,  
+    -1px 1px 0 #000;
+}
+
+
+.scroll-container {
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.RightToLeft {
+  display: flex;
+  animation: RightToLeft 20s linear infinite;
+}
+
+@keyframes RightToLeft {
+  from { transform: translateX(0); }
+  to { transform: translateX(20%); }
+}
+
+
+
+
