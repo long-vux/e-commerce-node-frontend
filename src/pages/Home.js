@@ -128,6 +128,13 @@ const Home = () => {
     { src: img1, alt: 'Item 1' },
     { src: img2, alt: 'Item 2' },
     { src: img3, alt: 'Item 3' },
+    { src: img4, alt: 'Item 4' },
+    { src: img2, alt: 'Item 2' },
+    { src: img3, alt: 'Item 3' },
+    { src: img4, alt: 'Item 4' },
+    { src: img2, alt: 'Item 2' },
+    { src: img3, alt: 'Item 3' },
+    { src: img4, alt: 'Item 4' },
     { src: img4, alt: 'Item 4' }
   ]
 

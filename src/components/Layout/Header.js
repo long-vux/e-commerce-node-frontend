@@ -3,9 +3,9 @@ import logo from '../../assets/images/logo.png'
 import {
   Search,
   PersonOutlineOutlined,
-  ShoppingCartOutlined, 
+  ShoppingCartOutlined
 } from '@mui/icons-material'
-import CloseIcon from '@mui/icons-material/Close';
+import CloseIcon from '@mui/icons-material/Close'
 import vingtageboy2 from '../../assets/images/vingtageboy2.png'
 import { Link } from 'react-router-dom'
 
@@ -95,7 +95,7 @@ const Header = () => {
   }, [isCartVisible, handleCloseCart])
 
   const handleNavMouseOver = category => {
-    setActiveCategory(activeCategory === category ? null : category)
+    setActiveCategory(category)
   }
 
   const handleSearchClick = () => {
@@ -112,7 +112,7 @@ const Header = () => {
   }
 
   return (
-    <header className='w-full bg-white shadow-md relative z-40 '>
+    <header className='w-full bg-white shadow-md sticky z-40 '>
       {!isSearchVisible ? (
         <div className='flex flex-col md:flex-row justify-around items-center '>
           {/* Logo */}
@@ -139,7 +139,7 @@ const Header = () => {
                     {category.toUpperCase()}
                   </Link>
                   {activeCategory === category && (
-                    <div className='absolute w-[1000px] bg-white shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300'>
+                    <div className='absolute w-[1000px] bg-white shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-50 transition-all duration-300'>
                       <div className='flex justify-around items-center p-4 w-full'>
                         {categories[activeCategory].map(categoryGroup => (
                           <div key={categoryGroup.title} className='p-4'>
@@ -187,9 +187,9 @@ const Header = () => {
               {isCartVisible && (
                 <div
                   ref={dropdownRef}
-                  className='absolute right-0 bg-black shadow-lg opacity-0 opacity-100 transition-opacity duration-300 z-50'
+                  className='absolute right-0 bg-black shadow-lg opacity-0 opacity-100 transition-all duration-300 z-50'
                 >
-                  <div className='flex justify-around gap-4 p-4 w-[347px] h-full flex-col bg-white'>
+                  <div className='flex justify-around gap-4 p-4 w-[347px] h-full flex-col bg-white transition-all duration-300'>
                     {cartItems.map(item => (
                       <div className='relative border-b border-gray-300'>
                         <div className='flex items-center gap-4'>
@@ -212,7 +212,10 @@ const Header = () => {
                     ))}
                     <div className='flex justify-between items-center pt-10'>
                       <div className='text-gray-500'>4 More Items In Cart</div>
-                      <button className='bg-black text-white p-2 rounded-md'>
+                      <button
+                        className='bg-black text-white p-2 rounded-md'
+                        onClick={() => (window.location.href = './cart')}
+                      >
                         View Cart
                       </button>
                     </div>
@@ -221,35 +224,32 @@ const Header = () => {
               )}
             </div>
           </div>
-
-  
         </div>
       ) : (
-        <div className='p-4 py-8'>
-          <div className='relative w-full flex justify-center'>
-            <div className='absolute inset-y-0 left-[80px] md:left-[530px] flex items-center pointer-events-none'>
+        <div className='p-4 py-8 transition-all duration-300'>
+          <div className='relative w-full flex justify-center  '>
+            <div className='flex justify-between items-center w-fit border px-5 rounded-full'>
               <Search className='text-gray-500' />
+              <input
+                type='text'
+                placeholder='Search product ...'
+                className='w-full  p-2 border-none focus:outline-none border border-red'
+              />
             </div>
-            <input
-              type='text'
-              placeholder='Search product ...'
-              className='w-[70%] md:w-[30%] p-2 pl-10 border border-2 border-black rounded-[50px]'
-            />
           </div>
           <button
             onClick={handleSearchClose}
             className='absolute p-2 top-[10%] right-[1%] font-bold text-2xl'
           >
-            <CloseIcon/>
+            <CloseIcon />
           </button>
         </div>
       )}
 
-      {/* Secondary Navigation */}
+      {/*  infinite scrolling */}
       {!isSearchVisible && (
         <div className='hidden md:flex justify-center bg-black text-white py-2 scroll-container tracking-wide font-bold -z-20'>
           <div className='flex gap-12 italic RightToLeft z-0'>
-            {/* Duplicate the content for seamless scrolling */}
             <div className='flex gap-12'>
               <p className='whitespace-nowrap'>Thrift Finds</p>
               <p className='whitespace-nowrap'>SecondHand Chic</p>
