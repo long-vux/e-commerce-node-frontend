@@ -11,9 +11,11 @@ const VerifyEmail = () => {
   useEffect(() => {
     const verifyEmail = async () => {
       try {
+        // /api/auth/:id/verify/:token
         await axios.get(`${process.env.REACT_APP_API_URL}api/auth/${userId}/verify/${token}`)
-        setValidUrl(true) 
+        setValidUrl(true)
       } catch (error) {
+        console.log(error)
         setValidUrl(false)
       }
     }

@@ -7,7 +7,11 @@ import Register from '../pages/Register';
 import Profile from '../pages/Profile';
 import VerifyEmail from '../pages/VerifyEmail';
 import Cart from '../pages/Cart';
+<<<<<<< HEAD
 import LoginSignup from '../pages/LoginSignup';
+=======
+import ChangePassword from '../pages/ChangePassword';
+>>>>>>> 3fd7ebfcc3ae14522913237ed782c515493e1551
 // import ErrorPage from '../pages/ErrorPage';
 
 const MainRoutes = () => (
@@ -18,9 +22,9 @@ const MainRoutes = () => (
       <Route path="/login" element={<LoginSignup />} />
       <Route path="/signup" element={<Register />} />
       <Route path="/profile" element={<Profile />} />
-      <Route path="/cart" element={<Cart />} />
       <Route path="/" element={<Home />} />
-      <Route path="/verify-email/:userId/:token" element={<VerifyEmail />} />
+      <Route path="/:userId/verify/:token" element={<VerifyEmail />} />
+      <Route path="/change-password" element={<ChangePassword />} /> 
     </Routes>
     <Footer />
   </>
