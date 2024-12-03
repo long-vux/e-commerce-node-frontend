@@ -16,7 +16,7 @@ const MainRoutes = () => (
       <Route path="/signup" element={<Register />} />
       <Route path="/profile" element={<Profile />} />
       <Route path="/" element={<Home />} />
-      <Route path="/verify-email/:userId/:token" element={<VerifyEmail />} />
+      <Route path="/:userId/verify/:token" element={<VerifyEmail />} />
     </Routes>
     <Footer />
   </>
