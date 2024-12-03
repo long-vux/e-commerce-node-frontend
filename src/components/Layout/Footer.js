@@ -5,8 +5,7 @@ import poster from '../../assets/images/poster.png';
 const Footer = () => {
   return (
     <div className="p-4 md:p-16">
-      <div className="w-full h-[2px] bg-gray-300 my-10 md:my-20"></div>
-      <div className="flex flex-col md:flex-row justify-center items-start md:items-center space-y-8 md:space-y-0 md:space-x-6">
+      <div className="flex flex-col border-t-1-black border-t pt-4 md:flex-row justify-center items-start md:items-center space-y-8 md:space-y-0 md:space-x-6">
         {/* Contact Us */}
         <div className="w-full md:w-1/4">
           <h1 className="font-bold text-xl md:text-2xl italic pb-3">CONTACT US</h1>
