@@ -18,6 +18,7 @@ const MainRoutes = () => (
       <Route path="/signup" element={<Register />} />
       <Route path="/profile" element={<Profile />} />
       <Route path="/" element={<Home />} />
+      <Route path="/cart" element={<Cart />} />
       <Route path="/:userId/verify/:token" element={<VerifyEmail />} />
       <Route path="/change-password" element={<ChangePassword />} /> 
     </Routes>

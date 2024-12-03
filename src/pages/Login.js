@@ -1,18 +1,19 @@
-import React, { useState, useEffect } from 'react'
-import axios from '../utils/axiosInstance' // require('axios')
+import React, { useState, useEffect, useContext } from 'react'
+import useAxios from '../utils/axiosInstance' // require('axios')
 import { useNavigate } from 'react-router-dom'
 import { GoogleLogin } from '@react-oauth/google';
-import { jwtDecode } from 'jwt-decode'
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { UserContext } from '../contexts/UserContext';
 
 const Login = () => {
   const apiUrl = process.env.REACT_APP_API_URL
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
-  const user = sessionStorage.getItem('user')
   const navigate = useNavigate()
+  const axios = useAxios()
+  const { user, login, logout } = useContext(UserContext);
 
   useEffect(() => {
     if (user) {
@@ -25,8 +26,7 @@ const Login = () => {
     try {
       const response = await axios.post(apiUrl + 'api/auth/googleLogin', { token })
       const newToken = JSON.stringify(response.data.token)
-      const decodedToken = jwtDecode(newToken)
-      sessionStorage.setItem('user', JSON.stringify(decodedToken))
+      login(newToken)
       toast.success('Login successful')
       navigate('/')
     } catch (error) {
@@ -50,10 +50,9 @@ const Login = () => {
 
       if (response.status === 200) {
         const newToken = JSON.stringify(response.data.token)
-        const decodedToken = jwtDecode(newToken)
-        sessionStorage.setItem('user', JSON.stringify(decodedToken))
+        login(newToken)
         setTimeout(() => {
-          sessionStorage.removeItem('user')
+          logout();
           toast.info('Session expired. Please log in again.')
           navigate('/login') // Redirect to login page after session expires
         }, 24 * 60 * 60 * 1000) // 20 seconds in milliseconds
