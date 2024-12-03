@@ -54,7 +54,7 @@ function ProductCard({ product }) {
   return (
     <div className="relative p-4 rounded-2xl bg-white shadow-lg hover:scale-105 transition-all duration-300">
       <img src={image} alt={name} className=' object-contain rounded-t-2xl' />
-      <div className="flex flex-row justify-end items-center gap-2 mb-2">
+      <div className="flex flex-row justify-end items-center gap-2 m-2">
         {isFavorite ? (
           <button onClick={handleRemoveFromFavorite} className='flex items-center justify-center '>
             <Favorite sx={{ fontSize: '30px', color: 'red', backdropFilter: 'blur(10px)' }} />
