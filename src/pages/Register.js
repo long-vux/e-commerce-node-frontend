@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
-import { toast } from 'react-toastify';
-import { GoogleLogin } from '@react-oauth/google';
-import { jwtDecode } from 'jwt-decode';
+import { toast } from 'react-toastify'
+import { GoogleLogin } from '@react-oauth/google'
+import { jwtDecode } from 'jwt-decode'
 
 const Signup = () => {
   const apiUrl = process.env.REACT_APP_API_URL
@@ -24,10 +24,12 @@ const Signup = () => {
     }
   }, [user, navigate])
 
-  const handleGoogleLoginSuccess = async (response) => {
+  const handleGoogleLoginSuccess = async response => {
     const token = response.credential
     try {
-      const response = await axios.post(apiUrl + 'api/auth/googleLogin', { token })
+      const response = await axios.post(apiUrl + 'api/auth/googleLogin', {
+        token
+      })
       const newToken = JSON.stringify(response.data.token)
       const decodedToken = jwtDecode(newToken)
       sessionStorage.setItem('user', JSON.stringify(decodedToken))
@@ -37,12 +39,12 @@ const Signup = () => {
       console.log(error)
       toast.error('Login failed')
     }
-  };
+  }
 
-  const handleGoogleLoginFailure = (error) => {
+  const handleGoogleLoginFailure = error => {
     console.log(error)
     toast.error('Login failed')
-  };
+  }
 
   const handleSubmit = async e => {
     e.preventDefault()
@@ -59,10 +61,13 @@ const Signup = () => {
       setError('')
     }
     try {
-      const response = await axios.post(
-        apiUrl + 'api/auth/register',
-        { firstName, lastName, email, phoneNumber, password }
-      )
+      const response = await axios.post(apiUrl + 'api/auth/register', {
+        firstName,
+        lastName,
+        email,
+        phoneNumber,
+        password
+      })
       if (response.status === 200) {
         toast.success('Account created successfully, please verify your email')
         navigate(`/login`)
@@ -83,30 +88,66 @@ const Signup = () => {
           <div className='flex flex-row gap-4'>
             <div className='flex flex-col mb-4 w-1/2'>
               <label className='text-sm font-bold mb-1'>First Name</label>
-              <input type="text" value={firstName} required className='border border-1 border-gray-300 rounded-md p-2' onChange={e => setFirstName(e.target.value)} />
+              <input
+                type='text'
+                value={firstName}
+                required
+                className='border border-1 border-gray-300 rounded-md p-2'
+                onChange={e => setFirstName(e.target.value)}
+              />
             </div>
             <div className='flex flex-col mb-4 w-1/2'>
               <label className='text-sm font-bold mb-1'>Last Name</label>
-              <input type="text" value={lastName} required className='border border-1 border-gray-300 rounded-md p-2' onChange={e => setLastName(e.target.value)} />
+              <input
+                type='text'
+                value={lastName}
+                required
+                className='border border-1 border-gray-300 rounded-md p-2'
+                onChange={e => setLastName(e.target.value)}
+              />
             </div>
           </div>
           <div className='flex flex-col mb-4'>
             <label className='text-sm font-bold mb-1'>Email</label>
-            <input type="email" value={email} required className='border border-1 border-gray-300 rounded-md p-2' onChange={e => setEmail(e.target.value)} />
+            <input
+              type='email'
+              value={email}
+              required
+              className='border border-1 border-gray-300 rounded-md p-2'
+              onChange={e => setEmail(e.target.value)}
+            />
           </div>
 
-          <div className='flex flex-col mb-4' >
+          <div className='flex flex-col mb-4'>
             <label className='text-sm font-bold mb-1'>Phone Number</label>
-            <input type="tel" value={phoneNumber} required className='border border-1 border-gray-300 rounded-md p-2' onChange={e => setPhoneNumber(e.target.value)} />
+            <input
+              type='tel'
+              value={phoneNumber}
+              required
+              className='border border-1 border-gray-300 rounded-md p-2'
+              onChange={e => setPhoneNumber(e.target.value)}
+            />
           </div>
           <div className='flex flex-row gap-4'>
             <div className='flex flex-col mb-4 w-1/2'>
               <label className='text-sm font-bold mb-1'>Password</label>
-              <input type="password" value={password} required className='border border-1 border-gray-300 rounded-md p-2' onChange={e => setPassword(e.target.value)} />
+              <input
+                type='password'
+                value={password}
+                required
+                className='border border-1 border-gray-300 rounded-md p-2'
+                onChange={e => setPassword(e.target.value)}
+              />
             </div>
             <div className='flex flex-col mb-4 w-1/2'>
               <label className='text-sm font-bold mb-1'>Confirm Password</label>
-              <input type="password" value={confirmPassword} required className='border border-1 border-gray-300 rounded-md p-2' onChange={e => setConfirmPassword(e.target.value)} />
+              <input
+                type='password'
+                value={confirmPassword}
+                required
+                className='border border-1 border-gray-300 rounded-md p-2'
+                onChange={e => setConfirmPassword(e.target.value)}
+              />
             </div>
           </div>
           {error && (
@@ -114,16 +155,27 @@ const Signup = () => {
               <p className='text-red-500'>{error}</p>
             </div>
           )}
-          <button className='bg-[#1D4567] text-white p-2 mb-4 rounded-md hover:bg-white hover:text-[#1D4567] hover:outline hover:outline-1 hover:outline-[#1D4567] hover:font-bold'><span className='font-bold'>Sign up</span></button>
+          <button className='bg-[#1D4567] text-white p-2 mb-4 rounded-md hover:bg-white hover:text-[#1D4567] hover:outline hover:outline-1 hover:outline-[#1D4567] hover:font-bold'>
+            <span className='font-bold'>Sign up</span>
+          </button>
           <GoogleLogin
             onSuccess={handleGoogleLoginSuccess}
             onFailure={handleGoogleLoginFailure}
           />
         </form>
-        <span className='flex justify-center text-sm gap-2'>Already have an account?  <a href="/login" className='font-bold underline'>Login</a></span>
+        <span className='flex justify-center text-sm gap-2'>
+          Already have an account?{' '}
+          <a href='/login' className='font-bold underline'>
+            Login
+          </a>
+        </span>
       </div>
       <div className='w-2/5'>
-        <img src={process.env.PUBLIC_URL + '/assets/hotel_facilities/pool.jpg'} alt='room' className='h-[600px] w-full' />
+        <img
+          src={process.env.PUBLIC_URL + '/assets/hotel_facilities/pool.jpg'}
+          alt='room'
+          className='h-[600px] w-full'
+        />
       </div>
     </div>
   )

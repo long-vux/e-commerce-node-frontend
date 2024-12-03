@@ -7,13 +7,15 @@ import Register from '../pages/Register';
 import Profile from '../pages/Profile';
 import VerifyEmail from '../pages/VerifyEmail';
 import Cart from '../pages/Cart';
+import LoginSignup from '../pages/LoginSignup';
 // import ErrorPage from '../pages/ErrorPage';
 
 const MainRoutes = () => (
   <>
     <Header />
     <Routes>
-      <Route path="/login" element={<Login />} />
+
+      <Route path="/login" element={<LoginSignup />} />
       <Route path="/signup" element={<Register />} />
       <Route path="/profile" element={<Profile />} />
       <Route path="/cart" element={<Cart />} />
