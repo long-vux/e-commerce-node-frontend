@@ -21,10 +21,12 @@ const Login = () => {
     }
   }, [user, navigate])
 
-  const handleGoogleLoginSuccess = async (response) => {
+  const handleGoogleLoginSuccess = async response => {
     const token = response.credential
     try {
-      const response = await axios.post(apiUrl + 'api/auth/googleLogin', { token })
+      const response = await axios.post(apiUrl + 'api/auth/googleLogin', {
+        token
+      })
       const newToken = JSON.stringify(response.data.token)
       login(newToken)
       toast.success('Login successful')
@@ -33,20 +35,21 @@ const Login = () => {
       console.log(error)
       toast.error('Login failed')
     }
-  };
+  }
 
-  const handleGoogleLoginFailure = (error) => {
+  const handleGoogleLoginFailure = error => {
     console.log(error)
     toast.error('Login failed')
-  };
+  }
 
   const handleSubmit = async e => {
     e.preventDefault()
 
     try {
-      const response = await axios.post(
-        apiUrl + 'api/auth/login', { email, password }
-      )
+      const response = await axios.post(apiUrl + 'api/auth/login', {
+        email,
+        password
+      })
 
       if (response.status === 200) {
         const newToken = JSON.stringify(response.data.token)
@@ -58,7 +61,7 @@ const Login = () => {
         }, 24 * 60 * 60 * 1000) // 20 seconds in milliseconds
         navigate('/')
         toast.success('Login successful')
-      } 
+      }
     } catch (error) {
       console.log('error', error)
       if (error.response?.status === 403) {
@@ -66,7 +69,10 @@ const Login = () => {
       } else if (error.response?.status === 401) {
         setError(error.response.data?.message)
       } else {
-        setError(error.response?.data?.errors?.Email[0] || error.response?.data?.errors?.Password[0])
+        setError(
+          error.response?.data?.errors?.Email[0] ||
+            error.response?.data?.errors?.Password[0]
+        )
       }
     }
   }
@@ -123,7 +129,7 @@ const Login = () => {
 
         {/* SIGN UP */}
         <span className='flex justify-center text-sm gap-2'>
-          Haven't have an account?{' '}
+          Haven't have an account?
           <a href='/signup' className='font-bold underline'>
             Signup
           </a>

@@ -1,4 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
+
 import logo from '../../assets/images/logo.png'
 import {
   Search,
@@ -8,6 +10,7 @@ import {
 import CloseIcon from '@mui/icons-material/Close'
 import vingtageboy2 from '../../assets/images/vingtageboy2.png'
 import { Link } from 'react-router-dom'
+
 
 const categories = {
   men: [
@@ -59,9 +62,13 @@ const cartItems = [
 ]
 
 const Header = () => {
+  const navigate = useNavigate()
+
   const [isSearchVisible, setIsSearchVisible] = useState(false)
   const [activeCategory, setActiveCategory] = useState(null)
   const [isCartVisible, setIsCartVisible] = useState(false)
+
+  let user = sessionStorage.getItem('user')
 
   const dropdownRef = useRef(null)
   const buttonRef = useRef(null)
@@ -171,9 +178,15 @@ const Header = () => {
             <div className='text-gray-600 hover:text-blue-500 cursor-pointer'>
               <Search fontSize='large' onClick={handleSearchClick} />
             </div>
-            <Link to='/profile' className='text-gray-600 hover:text-blue-500'>
-              <PersonOutlineOutlined fontSize='large' />
-            </Link>
+            {user ? (
+              <Link to='/profile' className='text-gray-600 hover:text-blue-500'>
+                <PersonOutlineOutlined fontSize='large' />
+              </Link>
+            ) : (
+              <Link to='/login' className='text-gray-600 hover:text-blue-500'>
+                <PersonOutlineOutlined fontSize='large' />
+              </Link>
+            )}
             <div className='relative'>
               <button
                 ref={buttonRef}
