@@ -1,25 +1,26 @@
-import React, { useState, useEffect } from 'react'
-import axios from '../utils/axiosInstance'
+import React, { useState, useEffect, useContext } from 'react'
+import useAxios from '../utils/axiosInstance' // require('axios')
 import { useNavigate } from 'react-router-dom'
 import { GoogleLogin } from '@react-oauth/google'
-import { jwtDecode } from 'jwt-decode'
 import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
+import { UserContext } from '../contexts/UserContext';
 
 import './style.css'
 import '@fortawesome/fontawesome-free/css/all.min.css'
 import madnessLogo from '../assets/utilities/madnessLogo.png'
 
 const LoginSignup = () => {
+  const { user, login, logout } = useContext(UserContext);
+  const apiUrl = process.env.REACT_APP_API_URL
+  const navigate = useNavigate()
+  const [error, setError] = useState('')
+  const axios = useAxios()
+
   // SIGN IN
   const [signUpMode, setSignUpMode] = useState(false)
-
-  const apiUrl = process.env.REACT_APP_API_URL
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
-  const user = sessionStorage.getItem('user')
-  const navigate = useNavigate()
 
   useEffect(() => {
     if (user) {
@@ -34,12 +35,11 @@ const LoginSignup = () => {
         token
       })
       const newToken = JSON.stringify(response.data.token)
-      const decodedToken = jwtDecode(newToken)
-      sessionStorage.setItem('user', JSON.stringify(decodedToken))
+      login(newToken)
       toast.success('Login successful')
       navigate('/')
     } catch (error) {
-      console.log(error)
+      console.log('error', error)
       toast.error('Login failed')
     }
   }
@@ -60,13 +60,9 @@ const LoginSignup = () => {
 
       if (response.status === 200) {
         const newToken = JSON.stringify(response.data.token)
-        const decodedToken = jwtDecode(newToken)
-
-        console.log(decodedToken);
-        
-        sessionStorage.setItem('user', JSON.stringify(decodedToken))
+        login(newToken)
         setTimeout(() => {
-          sessionStorage.removeItem('user')
+          logout();
           toast.info('Session expired. Please log in again.')
           navigate('/login') // Redirect to login page after session expires
         }, 24 * 60 * 60 * 1000) // 20 seconds in milliseconds
