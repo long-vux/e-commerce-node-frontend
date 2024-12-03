@@ -7,6 +7,7 @@ import Register from '../pages/Register';
 import Profile from '../pages/Profile';
 import VerifyEmail from '../pages/VerifyEmail';
 import Cart from '../pages/Cart';
+import ChangePassword from '../pages/ChangePassword';
 // import ErrorPage from '../pages/ErrorPage';
 
 const MainRoutes = () => (
@@ -18,7 +19,8 @@ const MainRoutes = () => (
       <Route path="/profile" element={<Profile />} />
       <Route path="/cart" element={<Cart />} />
       <Route path="/" element={<Home />} />
-      <Route path="/verify-email/:userId/:token" element={<VerifyEmail />} />
+      <Route path="/:userId/verify/:token" element={<VerifyEmail />} />
+      <Route path="/change-password" element={<ChangePassword />} /> 
     </Routes>
     <Footer />
   </>
