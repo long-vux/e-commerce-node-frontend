@@ -1,20 +1,26 @@
 import axios from "axios";
+import { useContext } from "react";
+import { UserContext } from "../contexts/UserContext";
 
-const axiosInstance = axios.create({
-  baseURL: process.env.REACT_APP_API_URL,
-});
+const useAxios = () => {
+  const { token } = useContext(UserContext);
+  const axiosInstance = axios.create({
+    baseURL: process.env.REACT_APP_API_URL,
+  });
 
-axiosInstance.interceptors.request.use(
-  (config) => {
-    const token = sessionStorage.getItem('user');
-    if (token) {
-      config.headers['Authorization'] = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
+  const cleanToken = token?.replace(/^"|"$/g, '');
 
-export default axiosInstance;
+  axiosInstance.interceptors.request.use(
+    (config) => {
+      if (cleanToken) {
+        config.headers.authorization = `Bearer ${cleanToken}`;
+      }
+      return config;
+    },
+    (error) => Promise.reject(error)
+  );
+
+  return axiosInstance;
+};
+
+export default useAxios;

@@ -1,171 +1,449 @@
-import React, { useState } from 'react';
-import { Person2Outlined, LogoutOutlined, ShoppingBagOutlined, EditOutlined } from '@mui/icons-material';
+import React, { useState, useEffect, useContext, useCallback } from 'react';
+import {
+  Person2Outlined, LogoutOutlined, ShoppingBagOutlined,
+  EditOutlined, AddOutlined, DeleteOutlined,
+} from '@mui/icons-material';
+import {
+  Dialog, DialogTitle, DialogContent, DialogActions, Button,
+  TextField, MenuItem,
+} from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import defaultProfileImage from '../assets/images/default-profile.jpg'
+import defaultProfileImage from '../assets/images/default-profile.jpg';
+import { getProvinces, getDistricts, getWards } from '../utils/addressService';
+import useAxios from '../utils/axiosInstance';
+import { toast } from 'react-toastify';
+import { UserContext } from '../contexts/UserContext';
 
 const Profile = () => {
-
-  const user = JSON.parse(sessionStorage.getItem('user'))
-  const navigate = useNavigate()
+  const { user, logout, updateUser } = useContext(UserContext);
+  const navigate = useNavigate();
+  const axios = useAxios();
 
   const [isEditing, setIsEditing] = useState(false);
-  const [editedUser, setEditedUser] = useState(user || {});
+  const [editedUser, setEditedUser] = useState({});
+  const [addresses, setAddresses] = useState([]);
 
-  let profileImage = defaultProfileImage
-  if (user) {
-    profileImage = user.image || defaultProfileImage
-  }
+  // Modal States
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [currentAddressId, setCurrentAddressId] = useState(null);
+
+  // Address Fields
+  const [provinces, setProvinces] = useState([]);
+  const [districts, setDistricts] = useState([]);
+  const [wards, setWards] = useState([]);
+  const [selectedProvince, setSelectedProvince] = useState('');
+  const [selectedDistrict, setSelectedDistrict] = useState('');
+  const [selectedWard, setSelectedWard] = useState('');
+  const [street, setStreet] = useState('');
+  const [receiverName, setReceiverName] = useState('');
+  const [receiverPhone, setReceiverPhone] = useState(user?.phone || '');
+
+  const [error, setError] = useState('');
+
+  // Fetch user profile and addresses on load
+  useEffect(() => {
+    if (user) {
+      setEditedUser(user);
+      fetchAddresses();
+    }
+  }, [user]);
+
+  const fetchAddresses = useCallback(async () => {
+    try {
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}api/user/addresses`);
+      setAddresses(response.data.data);
+    } catch (error) {
+      setError(error.response?.data?.message || 'An error occurred');
+    }
+  }, [axios]);
+
+  useEffect(() => {
+    const fetchProvinces = async () => {
+      const data = await getProvinces();
+      setProvinces(data);
+    };
+    fetchProvinces();
+  }, []);
 
   const handleLogout = () => {
-    sessionStorage.removeItem('user')
-    navigate('/')
-  }
+    logout();
+    navigate('/');
+  };
 
-  const handleEditClick = () => {
-    setIsEditing(true);
-  }
+  const handleEditClick = () => setIsEditing(true);
 
   const handleCancelEdit = () => {
     setIsEditing(false);
     setEditedUser(user);
-  }
+    closeModal();
+  };
 
-  const handleSave = () => {
-    // Implement save functionality here, e.g., API call to update user data
-    sessionStorage.setItem('user', JSON.stringify(editedUser));
-    setIsEditing(false);
-  }
+  const handleProfileUpdate = async () => {
+    try {
+      const updatedUserData = {
+        email: user.email,
+        firstName: editedUser.firstName,
+        lastName: editedUser.lastName,
+        phone: editedUser.phone,
+      };
+      const response = await axios.put(`${process.env.REACT_APP_API_URL}api/user/updateProfile`, updatedUserData);
+      console.log('response', response.data.data);
+      const updatedUser = response.data.data; // Adjust based on your API response
+      updateUser(updatedUser); // Update the user in context
+      window.location.reload();
+      toast.success('Profile updated successfully');
+    } catch (error) {
+      setError(error.response?.data?.message || 'An error occurred');
+      toast.error(error.response || 'An error occurred');
+    }
+  };
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setEditedUser(prevState => ({
-      ...prevState,
-      [name]: value
-    }));
-  }
+  const handleAddressSave = async () => {
+    try {
+      if (!selectedProvince || !selectedDistrict || !selectedWard || !street || !receiverName || !receiverPhone) {
+        toast.error('Please fill in all required fields');
+        return;
+      }
+
+      if (isEditMode && currentAddressId) {
+        await axios.put(`${process.env.REACT_APP_API_URL}api/user/updateAddress/${currentAddressId}`, {
+          province: selectedProvince,
+          district: selectedDistrict,
+          ward: selectedWard,
+          street,
+          receiverName,
+          receiverPhone,
+        });
+        toast.success('Address updated successfully');
+      } else {
+        await axios.post(`${process.env.REACT_APP_API_URL}api/user/addAddress`, {
+          province: selectedProvince,
+          district: selectedDistrict,
+          ward: selectedWard,
+          street,
+          receiverName,
+          receiverPhone,
+        });
+        toast.success('Address added successfully');
+      }
+      closeModal();
+      fetchAddresses();
+    } catch (error) {
+      setError(error.response?.data?.message || 'An error occurred');
+      toast.error(error.response?.data?.message || 'An error occurred');
+    }
+  };
+
+  const handleDeleteAddress = async (addressId) => {
+    try {
+      await axios.delete(`${process.env.REACT_APP_API_URL}api/user/deleteAddress/${addressId}`);
+      toast.success('Address deleted successfully');
+      fetchAddresses();
+    } catch (error) {
+      setError(error.response?.data?.message || 'An error occurred');
+      toast.error(error.response?.data?.message || 'An error occurred');
+    }
+  };
+
+  const openModalForEdit = (address) => {
+    setIsEditMode(true);
+    setCurrentAddressId(address._id);
+    setReceiverName(address.receiverName);
+    setReceiverPhone(address.receiverPhone);
+    setSelectedProvince(address.province);
+    setSelectedDistrict(address.district);
+    setSelectedWard(address.ward);
+    setStreet(address.street);
+    setIsModalOpen(true);
+  };
+
+  const openModalForNew = () => {
+    setIsEditMode(false);
+    setReceiverName('');
+    setReceiverPhone(user?.phone || '');
+    setSelectedProvince('');
+    setSelectedDistrict('');
+    setSelectedWard('');
+    setStreet('');
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+    setCurrentAddressId(null);
+    setReceiverName('');
+    setReceiverPhone(user?.phone || '');
+    setSelectedProvince('');
+    setSelectedDistrict('');
+    setSelectedWard('');
+    setStreet('');
+  };
 
   return (
     <div className="md:p-20 pt-8 mx-auto w-5/6">
       <h1 className="text-3xl font-bold mb-4">Profile</h1>
       <div className="flex md:flex-row flex-col">
-
-        {/* Navigation */}
+        {/* Navigation Section */}
         <div className="md:w-1/6 w-full mr-4">
-          <button className="flex items-center mb-4 bg-white p-4 border border-gray-300" onClick={() => navigate('/profile')}>
+          {/* Navigation Buttons */}
+          <button className="flex items-center mb-4 bg-white p-4 border" onClick={() => navigate('/profile')}>
             <Person2Outlined sx={{ fontSize: 30, marginRight: 1 }} />
             <span className="text-xl">My Profile</span>
           </button>
-          <button className="flex items-center mb-4 bg-white p-4 border border-gray-300" onClick={() => navigate('/cart')}>
+          <button className="flex items-center mb-4 bg-white p-4 border" onClick={() => navigate('/cart')}>
             <ShoppingBagOutlined sx={{ fontSize: 30, marginRight: 1 }} />
             <span className="text-xl">My Purchase</span>
           </button>
           {user && (
-            <button className="flex items-center mb-4 bg-white p-4 border border-gray-300" onClick={handleLogout}>
+            <button className="flex items-center mb-4 bg-white p-4 border" onClick={handleLogout}>
               <LogoutOutlined sx={{ fontSize: 30, marginRight: 1 }} />
               <span className="text-xl">Log out</span>
             </button>
           )}
         </div>
 
-        {/* Profile */}
-        <div className="md:w-5/6 w-full p-6 border border-gray-300 flex md:flex-row flex-col gap-4 justify-between">
-          <div className="md:w-3/4 w-full">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold">My Profile</h2>
-              {!isEditing && (
-                <button onClick={handleEditClick} className="flex items-center hover:scale-110 transition-all duration-300">
-                  <EditOutlined />
-                </button>
-              )}
-            </div>
+        {/* Profile Section */}
+        <div className="md:w-5/6 w-full">
+          <div className="p-6 border border-gray-300 flex md:flex-row flex-col gap-4 justify-between">
+            <div className="md:w-3/4 w-full">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold">My Profile</h2>
+                {!isEditing && (
+                  <button
+                    onClick={handleEditClick}
+                    className="flex items-center hover:scale-110 transition-all duration-300"
+                  >
+                    <EditOutlined />
+                  </button>
+                )}
+              </div>
 
-            <div className="grid md:grid-cols-2 grid-cols-1 gap-4 mb-4">
-              <div>
-                <label className="block mb-2">First Name</label>
-                <input
-                  type="text"
+              <div className="grid md:grid-cols-2 grid-cols-1 gap-4 mb-4">
+                <TextField
+                  label="First Name"
                   name="firstName"
                   value={editedUser.firstName || ''}
-                  onChange={handleChange}
+                  onChange={(e) =>
+                    setEditedUser((prev) => ({ ...prev, firstName: e.target.value }))
+                  }
                   disabled={!isEditing}
-                  className={`w-full p-2 border rounded ${isEditing ? 'bg-white' : 'bg-gray-100'}`}
+                  fullWidth
+                  variant="outlined"
                 />
-              </div>
-              <div>
-                <label className="block mb-2">Last Name</label>
-                <input
-                  type="text"
+                <TextField
+                  label="Last Name"
                   name="lastName"
                   value={editedUser.lastName || ''}
-                  onChange={handleChange}
+                  onChange={(e) =>
+                    setEditedUser((prev) => ({ ...prev, lastName: e.target.value }))
+                  }
                   disabled={!isEditing}
-                  className={`w-full p-2 border rounded ${isEditing ? 'bg-white' : 'bg-gray-100'}`}
+                  fullWidth
+                  variant="outlined"
                 />
               </div>
-            </div>
-
-            <div className="grid md:grid-cols-2 grid-cols-1 gap-4 mb-4">
-              <div>
-                <label className="block mb-2">Email Address</label>
-                <input
-                  type="email"
+              <div className="grid md:grid-cols-2 grid-cols-1 gap-4 mb-4">
+                <TextField
+                  label="Email Address"
                   name="email"
                   value={editedUser.email || ''}
-                  onChange={handleChange}
-                  disabled={!isEditing}
-                  className={`w-full p-2 border rounded ${isEditing ? 'bg-white' : 'bg-gray-100'}`}
-                  placeholder="abc@gmail.com"
+                  disabled
+                  fullWidth
+                  variant="outlined"
                 />
-              </div>
-              <div>
-                <label className="block mb-2">Phone</label>
-                <input
-                  type="text"
+                <TextField
+                  label="Phone"
                   name="phone"
                   value={editedUser.phone || ''}
-                  onChange={handleChange}
+                  onChange={(e) =>
+                    setEditedUser((prev) => ({ ...prev, phone: e.target.value }))
+                  }
                   disabled={!isEditing}
-                  className={`w-full p-2 border rounded ${isEditing ? 'bg-white' : 'bg-gray-100'}`}
-                  placeholder="(xxx) xx-xxxx"
+                  fullWidth
+                  variant="outlined"
                 />
               </div>
-            </div>
 
-            <div className="mb-4">
-              <label className="block mb-2">Address</label>
-              <input
-                type="text"
-                name="address"
-                value={editedUser.address || ''}
-                onChange={handleChange}
-                disabled={!isEditing}
-                className={`w-full p-2 border rounded ${isEditing ? 'bg-white' : 'bg-gray-100'}`}
-              />
-            </div>
-            <div className="flex items-center justify-between">
-              <a href={`/change-password`} className="text-sm text-black underline">Change password</a>
-            </div>
-            {isEditing && (
-              <div className="flex space-x-4 justify-end mt-4">
-                <button onClick={handleSave} className="bg-blue-500 text-white px-4 py-2 rounded">Save</button>
-                <button onClick={handleCancelEdit} className="bg-gray-300 text-black px-4 py-2 rounded">Cancel</button>
+              <h3 className="text-lg font-semibold mb-2">Shipping Addresses</h3>
+              {addresses.map((address) => (
+                <div key={address._id} className="border p-4 mb-2 rounded relative">
+                  {isEditing && (
+                    <>
+                      <button
+                        className="absolute top-2 right-2 text-red-500"
+                        onClick={() => handleDeleteAddress(address._id)}
+                      >
+                        <DeleteOutlined />
+                      </button>
+                      <button
+                        className="absolute top-2 right-10 text-blue-500"
+                        onClick={() => openModalForEdit(address)}
+                      >
+                        <EditOutlined />
+                      </button>
+                    </>
+                  )}
+                  <p>
+                    <strong>Address:</strong> {address.street}, {address.ward},{' '}
+                    {address.district}, {address.province}
+                  </p>
+                  <p>
+                    <strong>Receiver Name:</strong> {address.receiverName}
+                  </p>
+                  <p>
+                    <strong>Receiver Phone:</strong> {address.receiverPhone}
+                  </p>
+                </div>
+              ))}
+              {isEditing && (
+                <button
+                  onClick={openModalForNew}
+                  className="flex items-center bg-green-500 text-white px-4 py-2 rounded"
+                >
+                  <AddOutlined className="mr-2" />
+                  Add New Address
+                </button>
+              )}
+              <div className="flex items-center justify-end mt-4">
+                {isEditing && (
+                  <>
+                    <Button
+                      onClick={handleProfileUpdate}
+                      color="primary"
+                      variant="contained"
+                    >
+                      Save
+                    </Button>
+                    <Button
+                      onClick={handleCancelEdit}
+                      color="secondary"
+                      variant="outlined"
+                      className="ml-4"
+                    >
+                      Cancel
+                    </Button>
+                  </>
+                )}
               </div>
-            )}
-          </div>
+            </div>
 
-          <div className="flex items-center flex-col justify-center gap-4">
-            <img src={profileImage} alt="Person with a cityscape background" className="rounded-full w-40 h-40 object-cover mr-4" />
-            {isEditing && (
-              <label className="bg-gray-200 p-2 rounded cursor-pointer">
-                Select Image
-                <input type="file" id="selectImage" className="hidden" />
-              </label>
-            )}
+            <div className="flex items-center flex-col justify-center gap-4">
+              <img
+                src={user?.image || defaultProfileImage}
+                alt="Profile"
+                className="rounded-full w-40 h-40 object-cover"
+              />
+              {isEditing && (
+                <label className="bg-gray-200 p-2 rounded cursor-pointer">
+                  Select Image
+                  <input type="file" id="selectImage" className="hidden" />
+                </label>
+              )}
+            </div>
           </div>
         </div>
       </div>
+
+      {/* Address Modal */}
+      <Dialog open={isModalOpen} onClose={closeModal} fullWidth maxWidth="sm">
+        <DialogTitle>{isEditMode ? 'Edit Address' : 'Add New Address'}</DialogTitle>
+        <DialogContent>
+          <TextField
+            label="Receiver Name"
+            value={receiverName}
+            onChange={(e) => setReceiverName(e.target.value)}
+            fullWidth
+            margin="normal"
+          />
+          <TextField
+            label="Receiver Phone"
+            value={receiverPhone}
+            onChange={(e) => setReceiverPhone(e.target.value)}
+            fullWidth
+            margin="normal"
+          />
+          <TextField
+            select
+            label="Province"
+            value={provinces.find((p) => p.name === selectedProvince)?.code}
+            onChange={(e) => {
+              const provinceCode = e.target.value;
+              const provinceName = provinces.find((p) => p.code === provinceCode)?.name;
+              setSelectedProvince(provinceName);
+              getDistricts(provinceCode).then(setDistricts);
+              setSelectedDistrict('');
+              setSelectedWard('');
+              setWards([]);
+            }}
+            fullWidth
+            margin="normal"
+          >
+            {provinces.map((province) => (
+              <MenuItem key={province.code} value={province.code}>
+                {province.name}
+              </MenuItem>
+            ))}
+          </TextField>
+          <TextField
+            select
+            label="District"
+            value={districts.find((d) => d.name === selectedDistrict)?.code}
+            onChange={(e) => {
+              const districtCode = e.target.value;
+              const districtName = districts.find((d) => d.code === districtCode)?.name;
+              setSelectedDistrict(districtName);
+              getWards(districtCode).then(setWards);
+              setSelectedWard('');
+            }}
+            fullWidth
+            margin="normal"
+            disabled={!selectedProvince}
+          >
+            {districts.map((district) => (
+              <MenuItem key={district.code} value={district.code}>
+                {district.name}
+              </MenuItem>
+            ))}
+          </TextField>
+          <TextField
+            select
+            label="Ward"
+            value={wards.find((w) => w.name === selectedWard)?.code}
+            onChange={(e) => {
+              const wardCode = e.target.value;
+              const wardName = wards.find((w) => w.code === wardCode)?.name;
+              setSelectedWard(wardName);
+            }}
+            fullWidth
+            margin="normal"
+            disabled={!selectedDistrict}
+          >
+            {wards.map((ward) => (
+              <MenuItem key={ward.code} value={ward.code}>
+                {ward.name}
+              </MenuItem>
+            ))}
+          </TextField>
+          <TextField
+            label="Street"
+            value={street}
+            onChange={(e) => setStreet(e.target.value)}
+            fullWidth
+            margin="normal"
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleAddressSave} color="primary" variant="contained">
+            {isEditMode ? 'Update Address' : 'Save Address'}
+          </Button>
+          <Button onClick={closeModal} color="secondary" variant="outlined">
+            Cancel
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
-}
+};
 
 export default Profile;
