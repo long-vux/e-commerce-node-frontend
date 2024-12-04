@@ -8,6 +8,7 @@ import { UserContext } from '../contexts/UserContext';
 
 const Login = () => {
   const apiUrl = process.env.REACT_APP_API_URL
+  console.log('apiUrl', apiUrl)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')

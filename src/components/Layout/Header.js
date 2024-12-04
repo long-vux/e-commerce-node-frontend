@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
-
+import React, { useState, useRef, useEffect, useCallback, useContext } from 'react'
+import useAxios from '../../utils/axiosInstance'
+import { UserContext } from '../../contexts/UserContext'
 import logo from '../../assets/images/logo.png'
 import {
   Search,
@@ -10,7 +10,6 @@ import {
 import CloseIcon from '@mui/icons-material/Close'
 import vingtageboy2 from '../../assets/images/vingtageboy2.png'
 import { Link } from 'react-router-dom'
-
 
 const categories = {
   men: [
@@ -37,43 +36,46 @@ const categories = {
   ]
 }
 
-const cartItems = [
-  {
-    id: 1,
-    name: 'Wireless Headphones',
-    price: 99.99,
-    quantity: 1,
-    image: 'http://localhost:3000/static/media/item5-1.506f4605917d1b5ddddf.png'
-  },
-  {
-    id: 2,
-    name: 'Smart Watch',
-    price: 199.99,
-    quantity: 2,
-    image: 'http://localhost:3000/static/media/item5-1.506f4605917d1b5ddddf.png'
-  },
-  {
-    id: 3,
-    name: 'Bluetooth Speaker',
-    price: 49.99,
-    quantity: 3,
-    image: 'http://localhost:3000/static/media/item5-1.506f4605917d1b5ddddf.png'
-  }
-]
+// const cartItems = [
+//   {
+//     id: 1,
+//     name: 'Wireless Headphones',
+//     price: 99.99,
+//     quantity: 1,
+//     image: 'http://localhost:3000/static/media/item5-1.506f4605917d1b5ddddf.png'
+//   },
+//   {
+//     id: 2,
+//     name: 'Smart Watch',
+//     price: 199.99,
+//     quantity: 2,
+//     image: 'http://localhost:3000/static/media/item5-1.506f4605917d1b5ddddf.png'
+//   },
+//   {
+//     id: 3,
+//     name: 'Bluetooth Speaker',
+//     price: 49.99,
+//     quantity: 3,
+//     image: 'http://localhost:3000/static/media/item5-1.506f4605917d1b5ddddf.png'
+//   }
+// ]
 
 const Header = () => {
-  const navigate = useNavigate()
+  const apiUrl = process.env.REACT_APP_API_URL;
+  const axios = useAxios();
+  const [cartItems, setCartItems] = useState([]);
+  const displayCartItems = cartItems.slice(0, 4);
+  const remainingItemsCount = cartItems.length - displayCartItems.length;
 
   const [isSearchVisible, setIsSearchVisible] = useState(false)
   const [activeCategory, setActiveCategory] = useState(null)
   const [isCartVisible, setIsCartVisible] = useState(false)
 
-  let user = sessionStorage.getItem('user')
+  const { user } = useContext(UserContext);
 
   const dropdownRef = useRef(null)
   const buttonRef = useRef(null)
 
-  // Memoize handleCloseCart to prevent it from changing on every render
   const handleCloseCart = useCallback(() => {
     setIsCartVisible(false)
   }, [])
@@ -100,6 +102,25 @@ const Header = () => {
       document.removeEventListener('mousedown', handleClickOutside)
     }
   }, [isCartVisible, handleCloseCart])
+
+  useEffect(() => {
+    const fetchCartItems = async () => {
+      try {
+        const response = await axios.get(`${apiUrl}api/cart/get-minicart`)
+        setCartItems(response.data.items)
+      } catch (err) {
+        console.error(err)
+      }
+    }
+
+    if (user) {
+      fetchCartItems()
+    } else {
+      setCartItems([])
+    }
+  }, [axios, apiUrl, user])
+
+  
 
   const handleNavMouseOver = category => {
     setActiveCategory(category)
@@ -203,7 +224,7 @@ const Header = () => {
                   className='absolute right-0 bg-black shadow-lg opacity-0 opacity-100 transition-all duration-300 z-50'
                 >
                   <div className='flex justify-around gap-4 p-4 w-[347px] h-full flex-col bg-white transition-all duration-300'>
-                    {cartItems.map(item => (
+                    {displayCartItems.map(item => (
                       <div className='relative border-b border-gray-300'>
                         <div className='flex items-center gap-4'>
                           <img
@@ -224,7 +245,11 @@ const Header = () => {
                       </div>
                     ))}
                     <div className='flex justify-between items-center pt-10'>
-                      <div className='text-gray-500'>4 More Items In Cart</div>
+                      <div className='text-gray-500'>
+                        {
+                          remainingItemsCount > 0 ? `${remainingItemsCount} More Items In Cart` : 'More Details In Cart'
+                        }
+                      </div>
                       <button
                         className='bg-black text-white p-2 rounded-md'
                         onClick={() => (window.location.href = './cart')}

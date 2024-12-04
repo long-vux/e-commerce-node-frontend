@@ -13,6 +13,7 @@ import madnessLogo from '../assets/utilities/madnessLogo.png'
 const LoginSignup = () => {
   const { user, login, logout } = useContext(UserContext);
   const apiUrl = process.env.REACT_APP_API_URL
+  console.log('apiUrl', apiUrl)
   const navigate = useNavigate()
   const [error, setError] = useState('')
   const axios = useAxios()
