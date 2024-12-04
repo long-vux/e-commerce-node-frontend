@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext, useCallback } from 'react';
 import {
   Person2Outlined, LogoutOutlined, ShoppingBagOutlined,
-  EditOutlined, AddOutlined, DeleteOutlined,
+  EditOutlined, AddOutlined, DeleteOutlined, LockResetOutlined,
 } from '@mui/icons-material';
 import {
   Dialog, DialogTitle, DialogContent, DialogActions, Button,
@@ -185,20 +185,24 @@ const Profile = () => {
       <h1 className="text-3xl font-bold mb-4">Profile</h1>
       <div className="flex md:flex-row flex-col">
         {/* Navigation Section */}
-        <div className="md:w-1/6 w-full mr-4">
+        <div className="md:w-1/5 w-full mr-4">
           {/* Navigation Buttons */}
-          <button className="flex items-center mb-4 bg-white p-4 border" onClick={() => navigate('/profile')}>
-            <Person2Outlined sx={{ fontSize: 30, marginRight: 1 }} />
-            <span className="text-xl">My Profile</span>
+          <button className="flex items-center mb-4 bg-white p-4 border w-full" onClick={() => navigate('/profile')}>
+            <Person2Outlined sx={{ fontSize: 24, marginRight: 1 }} />
+            <span className="text-lg">My Profile</span>
           </button>
-          <button className="flex items-center mb-4 bg-white p-4 border" onClick={() => navigate('/cart')}>
-            <ShoppingBagOutlined sx={{ fontSize: 30, marginRight: 1 }} />
-            <span className="text-xl">My Purchase</span>
+          <button className="flex items-center mb-4 bg-white p-4 border w-full" onClick={() => navigate('/cart')}>
+            <ShoppingBagOutlined sx={{ fontSize: 24, marginRight: 1 }} />
+            <span className="text-lg">My Purchase</span>
+          </button>
+          <button className="flex items-center mb-4 bg-white p-4 border w-full" onClick={() => navigate('/change-password')}>
+            <LockResetOutlined sx={{ fontSize: 24, marginRight: 1 }} />
+            <span className="text-lg">Change Password</span>
           </button>
           {user && (
-            <button className="flex items-center mb-4 bg-white p-4 border" onClick={handleLogout}>
-              <LogoutOutlined sx={{ fontSize: 30, marginRight: 1 }} />
-              <span className="text-xl">Log out</span>
+            <button className="flex items-center mb-4 bg-white p-4 border w-full" onClick={handleLogout}>
+              <LogoutOutlined sx={{ fontSize: 24, marginRight: 1 }} />
+              <span className="text-lg">Log out</span>
             </button>
           )}
         </div>
