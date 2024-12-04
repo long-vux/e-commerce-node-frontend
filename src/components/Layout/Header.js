@@ -64,8 +64,8 @@ const Header = () => {
   const apiUrl = process.env.REACT_APP_API_URL;
   const axios = useAxios();
   const [cartItems, setCartItems] = useState([]);
-  const displayCartItems = cartItems.slice(0, 4);
-  const remainingItemsCount = cartItems.length - displayCartItems.length;
+  const displayCartItems = cartItems?.slice(0, 4);
+  const remainingItemsCount = cartItems?.length - displayCartItems?.length;
 
   const [isSearchVisible, setIsSearchVisible] = useState(false)
   const [activeCategory, setActiveCategory] = useState(null)
@@ -157,7 +157,7 @@ const Header = () => {
           {/* Navigation Menu */}
           <nav className='mt-4 md:mt-0'>
             <ul className='flex flex-col md:flex-row gap-4 md:gap-16 text-lg font-bold'>
-              {Object.keys(categories).map(category => (
+              {Object.keys(categories)?.map(category => (
                 <li key={category} className='relative group'>
                   <Link
                     to={`/shopping/${category}`}
@@ -169,11 +169,11 @@ const Header = () => {
                   {activeCategory === category && (
                     <div className='absolute w-[1000px] bg-white shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-50 transition-all duration-300'>
                       <div className='flex justify-around items-center p-4 w-full'>
-                        {categories[activeCategory].map(categoryGroup => (
+                        {categories[activeCategory]?.map(categoryGroup => (
                           <div key={categoryGroup.title} className='p-4'>
                             <h3 className='font-bold'>{categoryGroup.title}</h3>
                             <ul>
-                              {categoryGroup.items.map((item, index) => (
+                              {categoryGroup.items?.map((item, index) => (
                                 <li key={index}>{item}</li>
                               ))}
                             </ul>
@@ -224,7 +224,7 @@ const Header = () => {
                   className='absolute right-0 bg-black shadow-lg opacity-0 opacity-100 transition-all duration-300 z-50'
                 >
                   <div className='flex justify-around gap-4 p-4 w-[347px] h-full flex-col bg-white transition-all duration-300'>
-                    {displayCartItems.map(item => (
+                    {displayCartItems?.map(item => (
                       <div className='relative border-b border-gray-300'>
                         <div className='flex items-center gap-4'>
                           <img

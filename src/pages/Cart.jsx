@@ -1,13 +1,17 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useContext } from 'react'
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined'
 import Checkbox from '@mui/material/Checkbox'
 import emptyCart2 from '../assets/utilities/emptyCart.png'
+import useAxios from '../utils/axiosInstance'
+import { UserContext } from '../contexts/UserContext'
 
 import img1 from '../assets/images/item6-1.png'
-import img2 from '../assets/images/item3-1.png'
-import img3 from '../assets/images/item4-1.png'
-import img4 from '../assets/images/item5-1.png'
+
 const Cart = () => {
+  const apiUrl = process.env.REACT_APP_API_URL
+  const { user } = useContext(UserContext)
+  const axios = useAxios()
+
   // Initializing state for cart items
   const [cartItems, setCartItems] = useState([])
 
@@ -22,38 +26,28 @@ const Cart = () => {
       prodColor: 'Black',
       availableSizes: ['S', 'M', 'L', 'XL'],
       availableColors: ['Black', 'White', 'Red']
-    },
-    {
-      prodName: 'Vintage Hoodie',
-      prodPrice: 30,
-      prodQuantity: 2,
-      prodImage: img2,
-      prodSize: 'L',
-      prodColor: 'Gray',
-      availableSizes: ['S', 'M', 'L'],
-      availableColors: ['Gray', 'Black', 'Green']
-    },
-    {
-      prodName: 'Denim Jacket',
-      prodPrice: 50,
-      prodQuantity: 1,
-      prodImage: img3,
-      prodSize: 'M',
-      prodColor: 'Blue',
-      availableSizes: ['S', 'M', 'L'],
-      availableColors: ['Blue', 'Black', 'White']
-    },
-    {
-      prodName: 'Sneakers',
-      prodPrice: 60,
-      prodQuantity: 1,
-      prodImage: img4,
-      prodSize: '10',
-      prodColor: 'White',
-      availableSizes: ['8', '9', '10', '11'],
-      availableColors: ['White', 'Black', 'Red']
     }
   ]
+
+  
+  useEffect(() => {
+    const fetchCartItems = async () => {
+      try {
+        const response = await axios.get(`${apiUrl}api/cart/get-cart`)
+        setCartItems(response.data.cart.items)
+        console.log(response.data.cart.items)
+      } catch (err) {
+        console.error(err)
+      }
+    }
+
+    if (user) {
+      fetchCartItems()
+    } else {
+      setCartItems([])
+    }
+  }, [axios, apiUrl, user])
+
 
   // Updating the state with CartItems
   useEffect(() => {
@@ -83,7 +77,7 @@ const Cart = () => {
 
   // Calculate total price of cart
   const calculateTotalPrice = () => {
-    return cartItems.reduce(
+    return cartItems?.reduce(
       (total, item) => total + item.prodPrice * item.prodQuantity,
       0
     )
@@ -96,8 +90,9 @@ const Cart = () => {
       </h1>
 
       {/* Conditional rendering based on cartItems length */}
-      {cartItems.length === 0 ? (
-        <div className='w-full h-full flex justify-center items-center'>
+      {!cartItems ? (
+        <div className='w-full h-full flex flex-col justify-center items-center'>
+          <h1 className='md:text-[30px] text-[20px] font-semibold'>Your cart is empty</h1>
           <img src={emptyCart2} alt='Empty Cart' className='w-1/2' />
         </div>
       ) : (
@@ -109,13 +104,13 @@ const Cart = () => {
                   <Checkbox defaultChecked color='default' /> Products
                 </td>
                 <td>Variations</td>
-                <td>Total Price</td>
                 <td>Quantity</td>
+                <td>Total Price</td>
                 <td>Action</td>
               </tr>
             </thead>
             <tbody>
-              {cartItems.map((item, index) => (
+              {cartItems?.map((item, index) => (
                 <tr key={index} className='border'>
                   <td className='p-3 flex gap-1'>
                     <div className='h-[140px] flex justify-center items-center'>
@@ -139,7 +134,7 @@ const Cart = () => {
                       onChange={e => handleSizeChange(index, e.target.value)}
                       className='p-2 border rounded'
                     >
-                      {item.availableSizes.map((size, i) => (
+                      {item.availableSizes?.map((size, i) => (
                         <option key={i} value={size}>
                           {size}
                         </option>
@@ -152,7 +147,7 @@ const Cart = () => {
                       onChange={e => handleColorChange(index, e.target.value)}
                       className='p-2 border rounded mt-2'
                     >
-                      {item.availableColors.map((color, i) => (
+                      {item.availableColors?.map((color, i) => (
                         <option key={i} value={color}>
                           {color}
                         </option>
@@ -215,7 +210,7 @@ const Cart = () => {
             </div>
 
             <button className='p-3 mt-2 rounded-sm hover:bg-white hover:text-black border-2 text-[15px] transition-all duration-200 font-semibold border-black bg-black text-white'>
-              CHECK OUT ({cartItems.length})
+              {cartItems?.length > 0 ? `CHECK OUT (${cartItems?.length})` : 'CHECK OUT'}
             </button>
           </div>
         </div>

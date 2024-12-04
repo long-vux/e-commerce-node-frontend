@@ -15,14 +15,14 @@ import { toast } from 'react-toastify';
 import { UserContext } from '../contexts/UserContext';
 
 const Profile = () => {
-  const { user, logout, updateUser } = useContext(UserContext);
+  const { user, logout } = useContext(UserContext);
   const navigate = useNavigate();
   const axios = useAxios();
 
   const [isEditing, setIsEditing] = useState(false);
   const [editedUser, setEditedUser] = useState({});
   const [addresses, setAddresses] = useState([]);
-
+  const [file, setFile] = useState(null);
   // Modal States
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -81,16 +81,14 @@ const Profile = () => {
 
   const handleProfileUpdate = async () => {
     try {
-      const updatedUserData = {
-        email: user.email,
-        firstName: editedUser.firstName,
-        lastName: editedUser.lastName,
-        phone: editedUser.phone,
-      };
-      const response = await axios.put(`${process.env.REACT_APP_API_URL}api/user/updateProfile`, updatedUserData);
-      console.log('response', response.data.data);
-      const updatedUser = response.data.data; // Adjust based on your API response
-      updateUser(updatedUser); // Update the user in context
+      const formData = new FormData();
+      formData.append('image', file);
+      formData.append('firstName', editedUser.firstName);
+      formData.append('lastName', editedUser.lastName);
+      formData.append('phone', editedUser.phone);
+      const response = await axios.put(`${process.env.REACT_APP_API_URL}api/user/updateProfile`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
       window.location.reload();
       toast.success('Profile updated successfully');
     } catch (error) {
@@ -341,7 +339,7 @@ const Profile = () => {
               {isEditing && (
                 <label className="bg-gray-200 p-2 rounded cursor-pointer">
                   Select Image
-                  <input type="file" id="selectImage" className="hidden" />
+                  <input type="file" id="image" className="hidden" onChange={(e) => setFile(e.target.files[0])} />
                 </label>
               )}
             </div>
