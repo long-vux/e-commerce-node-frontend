@@ -15,7 +15,7 @@ import { toast } from 'react-toastify';
 import { UserContext } from '../contexts/UserContext';
 
 const Profile = () => {
-  const { user, logout } = useContext(UserContext);
+  const { user, logout, updateUser } = useContext(UserContext);
   const navigate = useNavigate();
   const axios = useAxios();
 
@@ -23,6 +23,7 @@ const Profile = () => {
   const [editedUser, setEditedUser] = useState({});
   const [addresses, setAddresses] = useState([]);
   const [file, setFile] = useState(null);
+  const [preview, setPreview] = useState(null);
   // Modal States
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -76,24 +77,36 @@ const Profile = () => {
   const handleCancelEdit = () => {
     setIsEditing(false);
     setEditedUser(user);
+    setPreview(null);
     closeModal();
   };
 
   const handleProfileUpdate = async () => {
     try {
       const formData = new FormData();
-      formData.append('image', file);
       formData.append('firstName', editedUser.firstName);
       formData.append('lastName', editedUser.lastName);
       formData.append('phone', editedUser.phone);
-      const response = await axios.put(`${process.env.REACT_APP_API_URL}api/user/updateProfile`, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
-      });
+      if (file) {
+        formData.append('image', file);
+      }
+      await updateUser(formData);
       window.location.reload();
       toast.success('Profile updated successfully');
     } catch (error) {
       setError(error.response?.data?.message || 'An error occurred');
       toast.error(error.response || 'An error occurred');
+    }
+  };
+
+  const handleImageChange = (e) => {
+    const selectedFile = e.target.files[0];
+    setFile(selectedFile);
+    if (selectedFile) {
+      const previewURL = URL.createObjectURL(selectedFile);
+      setPreview(previewURL);
+    } else {
+      setPreview(null);
     }
   };
 
@@ -332,14 +345,14 @@ const Profile = () => {
 
             <div className="flex items-center flex-col justify-center gap-4">
               <img
-                src={user?.image || defaultProfileImage}
+                src={preview || user?.image || defaultProfileImage}
                 alt="Profile"
                 className="rounded-full w-40 h-40 object-cover"
               />
               {isEditing && (
                 <label className="bg-gray-200 p-2 rounded cursor-pointer">
                   Select Image
-                  <input type="file" id="image" className="hidden" onChange={(e) => setFile(e.target.files[0])} />
+                  <input type="file" id="image" className="hidden" onChange={handleImageChange} />
                 </label>
               )}
             </div>
