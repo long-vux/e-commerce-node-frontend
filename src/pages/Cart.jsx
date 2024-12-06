@@ -6,15 +6,11 @@ import useAxios from '../utils/axiosInstance'
 import { UserContext } from '../contexts/UserContext'
 
 import img1 from '../assets/images/item6-1.png'
-<<<<<<< HEAD
 import img2 from '../assets/images/item3-1.png'
 import img3 from '../assets/images/item4-1.png'
 import { useNavigate } from 'react-router-dom';
 
 import img4 from '../assets/images/item5-1.png'
-=======
-
->>>>>>> 242d37c6310644a2f006471e6a55c95b6e859d70
 const Cart = () => {
   const apiUrl = process.env.REACT_APP_API_URL
   const { user } = useContext(UserContext)
