@@ -1,96 +1,121 @@
-import React, { useState } from 'react';
-import PropTypes from 'prop-types';
-import { ShoppingCartOutlined, CheckCircle, FavoriteBorder, Favorite } from '@mui/icons-material'
-import axios from 'axios';
-import { getSessionId, getUserId } from '../../utils/session';
+import React, { useState } from 'react'
+import PropTypes from 'prop-types'
+import {
+  ShoppingCartOutlined,
+  CheckCircle,
+  FavoriteBorder,
+  Favorite
+} from '@mui/icons-material'
+import axios from 'axios'
+import { getSessionId, getUserId } from '../../utils/session'
 
-function ProductCard({ product }) {
-  const { id, name, price, image } = product;
-  const [isAdded, setIsAdded] = useState(false);
-  const [isFavorite, setIsFavorite] = useState(true);
+function ProductCard ({ product }) {
+  const { _id, name, price, image, categories } = product
+  const [isAdded, setIsAdded] = useState(false)
+  const [isFavorite, setIsFavorite] = useState(true)
 
   const handleAddToCart = async () => {
-    const sessionId = getSessionId();
-    const userId = getUserId();
+    const sessionId = getSessionId()
+    const userId = getUserId()
 
     try {
       const response = await axios.post('/api/cart/add', {
         userId: userId || null,
         sessionId: sessionId,
-        productId: id,
-        quantity: 1,
-      });
-      console.log(response.data.message);
+        productId: _id,
+        quantity: 1
+      })
+      console.log(response.data.message)
     } catch (error) {
-      console.error('Error adding to cart', error);
+      console.error('Error adding to cart', error)
     }
-    setIsAdded(true);
-  };
+    setIsAdded(true)
+  }
 
-  const handleRemoveFromCart = async (productId) => {
-    const sessionId = getSessionId();
-    const userId = getUserId();
+  const handleRemoveFromCart = async productId => {
+    const sessionId = getSessionId()
+    const userId = getUserId()
 
     try {
       const response = await axios.post('/api/cart/remove', {
         userId: userId || null,
         sessionId: sessionId,
-        productId: productId,
-      });
-      console.log(response.data.message);
+        productId: productId
+      })
+      console.log(response.data.message)
     } catch (error) {
-      console.error('Error removing from cart', error);
+      console.error('Error removing from cart', error)
     }
-    setIsAdded(false);
-  };
+    setIsAdded(false)
+  }
 
   const handleAddToFavorite = async () => {
-    setIsFavorite(true);
-  };
+    setIsFavorite(true)
+  }
   const handleRemoveFromFavorite = async () => {
-    setIsFavorite(false);
-  };
+    setIsFavorite(false)
+  }
 
   return (
-    <div className="relative p-4 rounded-2xl bg-white shadow-lg hover:scale-105 transition-all duration-300">
-      <img src={image} alt={name} className=' object-contain rounded-t-2xl' />
-      <div className="flex flex-row justify-end items-center gap-2 m-2">
+    <div className='relative p-4 rounded-2xl bg-white  shadow-lg hover:scale-105 transition-all duration-300 '>
+      <a href={`/collection/${categories}/products/${_id}/${name.replace(/\s+/g, '-').toLowerCase()}`} >
+        <img src={image} alt={name} className=' object-cover rounded-t-2xl' />
+      </a>
+      <div className='flex flex-row justify-end items-center gap-2 m-2 '>
         {isFavorite ? (
-          <button onClick={handleRemoveFromFavorite} className='flex items-center justify-center '>
-            <Favorite sx={{ fontSize: '30px', color: 'red', backdropFilter: 'blur(10px)' }} />
+          <button
+            onClick={handleRemoveFromFavorite}
+            className='flex items-center justify-center '
+          >
+            <Favorite
+              sx={{
+                fontSize: '30px',
+                color: 'red',
+                backdropFilter: 'blur(10px)'
+              }}
+            />
           </button>
         ) : (
-          <button onClick={handleAddToFavorite} className='flex items-center justify-center '>
+          <button
+            onClick={handleAddToFavorite}
+            className='flex items-center justify-center '
+          >
             <FavoriteBorder sx={{ fontSize: '30px' }} />
           </button>
         )}
 
         {isAdded ? (
-          <button onClick={handleRemoveFromCart} className='bottom-0 right-0 w-[30px] h-[30px] bg-gray-200 rounded-full hover:bg-gray-300 flex items-center justify-center'>
+          <button
+            onClick={handleRemoveFromCart}
+            className='bottom-0 right-0 w-[30px] h-[30px] bg-gray-200 rounded-full hover:bg-gray-300 flex items-center justify-center'
+          >
             <CheckCircle sx={{ fontSize: '30px', color: 'green' }} />
           </button>
         ) : (
-          <button onClick={handleAddToCart} className='bottom-0 right-0 w-[30px] h-[30px] bg-gray-200 rounded-full hover:bg-gray-300'>
+          <button
+            onClick={handleAddToCart}
+            className='bottom-0 right-0 w-[30px] h-[30px] bg-gray-200 rounded-full hover:bg-gray-300'
+          >
             <ShoppingCartOutlined sx={{ fontSize: '20px' }} />
           </button>
         )}
       </div>
       <div className='flex flex-row justify-between items-center  '>
-        <h3 className="text-[18px] font-bold w-[200px]">{name}</h3>
-        <p className="text-[18px]">{price.toFixed(2)}$</p>
+        <h3 className='text-[18px] font-bold w-[200px]'>{name}</h3>
+        <p className='text-[18px]'>{price.toFixed(2)}$</p>
       </div>
     </div>
-  );
+  )
 }
 
 ProductCard.propTypes = {
   product: PropTypes.shape({
-    id: PropTypes.number.isRequired, // or string, depending on your data
+    _id: PropTypes.number.isRequired, // or string, depending on your data
     name: PropTypes.string.isRequired,
     price: PropTypes.number.isRequired,
-    image: PropTypes.string.isRequired,
+    image: PropTypes.string.isRequired
   }).isRequired,
-  onAddToCart: PropTypes.func.isRequired,
-};
+  onAddToCart: PropTypes.func.isRequired
+}
 
-export default ProductCard;
+export default ProductCard

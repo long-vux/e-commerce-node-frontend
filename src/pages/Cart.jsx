@@ -6,6 +6,8 @@ import emptyCart2 from '../assets/utilities/emptyCart.png'
 import img1 from '../assets/images/item6-1.png'
 import img2 from '../assets/images/item3-1.png'
 import img3 from '../assets/images/item4-1.png'
+import { useNavigate } from 'react-router-dom';
+
 import img4 from '../assets/images/item5-1.png'
 const Cart = () => {
   // Initializing state for cart items
@@ -88,6 +90,12 @@ const Cart = () => {
       0
     )
   }
+
+  const navigate = useNavigate();
+
+  const handleCheckoutClick = () => {
+    navigate('/cart/checkout'); // Navigate to the room management page
+  };
 
   return (
     <div className='p-10 border w-full h-full'>
@@ -214,7 +222,7 @@ const Cart = () => {
               </p>
             </div>
 
-            <button className='p-3 mt-2 rounded-sm hover:bg-white hover:text-black border-2 text-[15px] transition-all duration-200 font-semibold border-black bg-black text-white'>
+            <button className='p-3 mt-2 rounded-sm hover:bg-white hover:text-black border-2 text-[15px] transition-all duration-200 font-semibold border-black bg-black text-white' onClick={handleCheckoutClick}>
               CHECK OUT ({cartItems.length})
             </button>
           </div>

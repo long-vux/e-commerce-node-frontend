@@ -187,16 +187,16 @@ const Profile = () => {
         {/* Navigation Section */}
         <div className="md:w-1/6 w-full mr-4">
           {/* Navigation Buttons */}
-          <button className="flex items-center mb-4 bg-white p-4 border" onClick={() => navigate('/profile')}>
+          <button className="flex items-center mb-4 p-4 border w-full bg-black text-white " onClick={() => navigate('/profile')}>
             <Person2Outlined sx={{ fontSize: 30, marginRight: 1 }} />
             <span className="text-xl">My Profile</span>
           </button>
-          <button className="flex items-center mb-4 bg-white p-4 border" onClick={() => navigate('/cart')}>
+          <button className="flex items-center mb-4 bg-white p-4 border w-full hover:bg-black hover:text-white transition-all duration-300" onClick={() => navigate('/cart')}>
             <ShoppingBagOutlined sx={{ fontSize: 30, marginRight: 1 }} />
             <span className="text-xl">My Purchase</span>
           </button>
           {user && (
-            <button className="flex items-center mb-4 bg-white p-4 border" onClick={handleLogout}>
+            <button className="flex items-center mb-4 bg-white p-4 border w-full hover:bg-black hover:text-white transition-all duration-300" onClick={handleLogout}>
               <LogoutOutlined sx={{ fontSize: 30, marginRight: 1 }} />
               <span className="text-xl">Log out</span>
             </button>
