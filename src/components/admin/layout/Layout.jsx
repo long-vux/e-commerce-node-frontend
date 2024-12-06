@@ -1,7 +1,8 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useContext } from 'react';
 import Header from './Header';
 import Sidebar from './Sidebar';
 import { useNavigate } from 'react-router-dom';
+import { UserContext } from '../../../contexts/UserContext';
 
 const Layout = ({ children }) => {
   const navigate = useNavigate();
@@ -23,8 +24,6 @@ const Layout = ({ children }) => {
   //   console.log(userData);
     
   // }
-
-  
 
   return (
 <div className="w-full min-h-screen bg-gray-100 grid grid-cols-[200px_1fr] overflow-x-hidden  font-inter" style={{ gridTemplateRows: 'auto 1fr auto' }}>

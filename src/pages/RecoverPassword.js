@@ -1,19 +1,48 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import axios from '../utils/axiosInstance';
+import axios from 'axios';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
-const ChangePassword = () => {
+const RecoverPassword = () => {
   const navigate = useNavigate()
-  const [oldPassword, setOldPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
-  const user = JSON.parse(sessionStorage.getItem('user'))
-  const [error, setError] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [email, setEmail] = useState('')
+  
+  const [resetMode, setResetMode] = useState(false)
+  const { userId, token } = useParams()
 
-  const handleChangePassword = async () => {
+  useEffect(() => {
+    if (userId && token) {
+      setResetMode(true)
+    }
+  }, [userId, token])
+
+  const handleSendResetLink = async () => {
+    if (!email) {
+      toast.error('Email is required')
+      return
+    }
     try {
-      await axios.post(`${process.env.REACT_APP_API_URL}api/user/password/change`, { email: user.email, oldPassword, newPassword })
+      const response = await axios.post(`${process.env.REACT_APP_API_URL}api/user/password/recover`, { email })
+      toast.success(response.data.message)
     } catch (error) {
-      setError(error.response.data.message)
+      toast.error(error.response.data.message)
+    }
+  }
+
+  const handleResetPassword = async () => {
+    if (!newPassword || !confirmPassword) {
+      toast.error('Password is required')
+      return
+    }
+    try {
+      const response = await axios.put(`${process.env.REACT_APP_API_URL}api/user/password/reset/${userId}/${token}`, { newPassword })
+      navigate('/login')
+      toast.success(response.data.message)
+    } catch (error) {
+      toast.error(error.response.data.message)
     }
   }
 
@@ -21,38 +50,51 @@ const ChangePassword = () => {
     <div className="mx-auto mt-20 flex flex-col items-center">
       <div className='w-2/5 bg-white p-10 rounded-lg shadow-lg'>
         <div className='mb-4'>
-          <h1 className='text-3xl font-bold'>Change password for {user.firstName}</h1>
+          <h1 className='text-3xl font-bold'>Recover password</h1>
         </div>
-        <div className='mb-4'>
-          <label className="block mb-2">Enter old password</label>
-          <input
-            type="password"
-            name="oldPassword"
-            value={oldPassword || ''}
-            onChange={(e) => setOldPassword(e.target.value)}
-            className={`w-full p-2 border rounded bg-gray-100`}
-          />
-        </div>
-        <div>
-          <label className="block mb-2">Enter new password</label>
-          <input
-            type="password"
-            name="newPassword"
-            value={newPassword || ''}
-            onChange={(e) => setNewPassword(e.target.value)}
-            className={`w-full p-2 border rounded bg-gray-100`}
-          />
-        </div>
-        <h1 className='text-2xl font-bold'>{error}</h1>
-        <button className="flex items-center my-4 bg-white p-2 border border-gray-300" onClick={handleChangePassword}>
-          <span className="text-lg">Change password</span>
-        </button>
-        <button className="flex items-center my-4 bg-white p-2 border border-gray-300" onClick={() => navigate('/profile')}>
-          <span className="text-lg">Back to profile</span>
+        { resetMode ? (
+          <>
+            <div className='mb-4'>
+              <label className="block mb-2">Enter new password</label>
+              <input
+                type="password"
+                name="newPassword"
+                value={newPassword || ''}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className={`w-full p-2 border rounded bg-gray-100`}
+              />
+            </div>
+            <div>
+              <label className="block mb-2">Confirm new password</label>
+              <input
+                type="password"
+                name="confirmPassword"
+                value={confirmPassword || ''}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className={`w-full p-2 border rounded bg-gray-100`}
+              />
+            </div>
+          </>
+        ) : (
+          <div>
+            <label className="block mb-2">Enter your Email</label>
+            <input
+              type="email"
+              name="email"
+              value={email || ''}
+              required
+              onChange={(e) => setEmail(e.target.value)}
+              className={`w-full p-2 border rounded bg-gray-100`}
+            />
+          </div>
+        )}
+        <button className="flex items-center my-4 bg-white p-2 border border-gray-300" onClick={!resetMode ? handleSendResetLink : handleResetPassword}>
+          <span className="text-lg">{!resetMode ? 'Send reset link' : 'Reset password'}</span>
         </button>
       </div>
+
     </div>
   );
 };
 
-export default ChangePassword;
+export default RecoverPassword;

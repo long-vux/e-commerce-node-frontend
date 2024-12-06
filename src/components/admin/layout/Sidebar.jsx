@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import { NavLink } from 'react-router-dom'
 import {
   Dashboard,
@@ -8,13 +8,15 @@ import {
   CalendarMonth,
   Logout
 } from '@mui/icons-material'
+import { UserContext } from '../../../contexts/UserContext';
 
 const Sidebar = () => {
-  const activeStyle =
-    'bg-[#F5F7F8] border-r-4 border-black duration-500 ease-in-out'
+  const { logout } = useContext(UserContext);
+
+  const activeStyle = 'bg-[#F5F7F8] border-r-4 border-black  duration-500 ease-in-out'
   const inactiveStyle = 'text-gray-700  duration-500 ease-in-out'
   const handleLogout = () => {
-    sessionStorage.removeItem('user')
+    logout();
   }
 
   return (

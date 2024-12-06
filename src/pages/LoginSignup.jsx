@@ -161,12 +161,15 @@ const LoginSignup = () => {
                 <p className='text-red-500'>{error}</p>
               </div>
             )}
+            <div className='flex flex-start justify-start md:w-[60%]'>
+              <a href='/recover-password' className='text-[#444]'>Forgot password?</a>
+            </div>
 
             <input  type='submit' value='Login' onClick={handleSubmit} className='btn mt-4 solid' />
             {/* GOOGLE LOGIN */}
             <GoogleLogin
               onSuccess={handleGoogleLoginSuccess}
-              onError={handleGoogleLoginFailure}
+              onFailure={handleGoogleLoginFailure}
             />
           </form>
 
@@ -238,6 +241,9 @@ const LoginSignup = () => {
                 onChange={e => setConfirmPassword(e.target.value)}
               />
             </div>
+            <div className='flex flex-start justify-start md:w-[60%]'>
+              <a href='/recover-password' className='text-[#444]'>Forgot password?</a>
+            </div>
 
             {error_register && (
               <div className='mb-4'>
@@ -249,6 +255,7 @@ const LoginSignup = () => {
             <GoogleLogin
               onSuccess={handleGoogleLoginSuccess}
               onFailure={handleGoogleLoginFailure}
+              buttonText='Sign up with Google'
             />
           </form>
         </div>

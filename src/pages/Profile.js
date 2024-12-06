@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext, useCallback } from 'react';
 import {
   Person2Outlined, LogoutOutlined, ShoppingBagOutlined,
-  EditOutlined, AddOutlined, DeleteOutlined,
+  EditOutlined, AddOutlined, DeleteOutlined, LockResetOutlined,
 } from '@mui/icons-material';
 import {
   Dialog, DialogTitle, DialogContent, DialogActions, Button,
@@ -22,7 +22,8 @@ const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedUser, setEditedUser] = useState({});
   const [addresses, setAddresses] = useState([]);
-
+  const [file, setFile] = useState(null);
+  const [preview, setPreview] = useState(null);
   // Modal States
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
@@ -76,26 +77,36 @@ const Profile = () => {
   const handleCancelEdit = () => {
     setIsEditing(false);
     setEditedUser(user);
+    setPreview(null);
     closeModal();
   };
 
   const handleProfileUpdate = async () => {
     try {
-      const updatedUserData = {
-        email: user.email,
-        firstName: editedUser.firstName,
-        lastName: editedUser.lastName,
-        phone: editedUser.phone,
-      };
-      const response = await axios.put(`${process.env.REACT_APP_API_URL}api/user/updateProfile`, updatedUserData);
-      console.log('response', response.data.data);
-      const updatedUser = response.data.data; // Adjust based on your API response
-      updateUser(updatedUser); // Update the user in context
+      const formData = new FormData();
+      formData.append('firstName', editedUser.firstName);
+      formData.append('lastName', editedUser.lastName);
+      formData.append('phone', editedUser.phone);
+      if (file) {
+        formData.append('image', file);
+      }
+      await updateUser(formData);
       window.location.reload();
       toast.success('Profile updated successfully');
     } catch (error) {
       setError(error.response?.data?.message || 'An error occurred');
       toast.error(error.response || 'An error occurred');
+    }
+  };
+
+  const handleImageChange = (e) => {
+    const selectedFile = e.target.files[0];
+    setFile(selectedFile);
+    if (selectedFile) {
+      const previewURL = URL.createObjectURL(selectedFile);
+      setPreview(previewURL);
+    } else {
+      setPreview(null);
     }
   };
 
@@ -185,7 +196,7 @@ const Profile = () => {
       <h1 className="text-3xl font-bold mb-4">Profile</h1>
       <div className="flex md:flex-row flex-col">
         {/* Navigation Section */}
-        <div className="md:w-1/6 w-full mr-4">
+        <div className="md:w-1/5 w-full mr-4">
           {/* Navigation Buttons */}
           <button className="flex items-center mb-4 p-4 border w-full bg-black text-white " onClick={() => navigate('/profile')}>
             <Person2Outlined sx={{ fontSize: 30, marginRight: 1 }} />
@@ -330,14 +341,14 @@ const Profile = () => {
 
             <div className="flex items-center flex-col justify-center gap-4">
               <img
-                src={user?.image || defaultProfileImage}
+                src={preview || user?.image || defaultProfileImage}
                 alt="Profile"
                 className="rounded-full w-40 h-40 object-cover"
               />
               {isEditing && (
                 <label className="bg-gray-200 p-2 rounded cursor-pointer">
                   Select Image
-                  <input type="file" id="selectImage" className="hidden" />
+                  <input type="file" id="image" className="hidden" onChange={handleImageChange} />
                 </label>
               )}
             </div>

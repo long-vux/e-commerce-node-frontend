@@ -1,23 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from '../utils/axiosInstance';
+import useAxios from '../utils/axiosInstance';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { UserContext } from '../contexts/UserContext';
 
 const ChangePassword = () => {
   const navigate = useNavigate()
   const [oldPassword, setOldPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
-  const user = JSON.parse(sessionStorage.getItem('user'))
-  const [error, setError] = useState('')
+  const { user } = useContext(UserContext)
+  const axios = useAxios()
 
   const handleChangePassword = async () => {
+    if (!oldPassword || !newPassword) {
+      toast.error('Password is required')
+      return
+    }
     try {
-      await axios.post(`${process.env.REACT_APP_API_URL}api/user/password/change`, { email: user.email, oldPassword, newPassword })
-      toast.success('Password changed successfully')
+      const response = await axios.put(`${process.env.REACT_APP_API_URL}api/user/password/change`, { oldPassword, newPassword })
+      toast.success(response.data.message)
       navigate('/profile')
     } catch (error) {
-      setError(error.response.data.message)
+      toast.error(error.response.data.message)
     }
   }
 
@@ -48,11 +53,6 @@ const ChangePassword = () => {
             className={`w-full p-2 border rounded bg-gray-100`}
           />
         </div>
-        {error && (
-            <div className='mt-2 mb-4'>
-              <p className='text-red-500'>{error}</p>
-            </div>
-        )}
         <button className="flex items-center my-4 bg-white p-2 border border-gray-300" onClick={handleChangePassword}>
           <span className="text-lg">Change password</span>
         </button>
