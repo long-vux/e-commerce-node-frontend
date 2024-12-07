@@ -1,37 +1,23 @@
 import React, { useState } from "react";
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  Button,
-  Box,
-  Stack,
-  Typography,
-  IconButton,
-  Divider,
-} from "@mui/material";
+import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button, Box, Stack, Typography, IconButton, Divider } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
+import DeleteIcon from "@mui/icons-material/Delete";
+import { toast } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css'
+
 
 const AddProduct = ({ open, onClose, onAdd }) => {
-  const initialProductState = {
+  const [product, setProduct] = useState({
     name: "",
-    price: 0, // Initialize price as a number
+    price: 0,
     images: [],
     description: "",
-    categories: [],
-    tags: [],
+    category: "",
+    tags: "",
     variants: [{ size: "", color: "", stock: "" }],
-  };
-
-  const [product, setProduct] = useState(initialProductState);
-  const [errors, setErrors] = useState({
-    name: "",
-    price: "",
-    images: "",
-    variants: "",
   });
+
+  const [imageFiles, setImageFiles] = useState([]); // New state to store image files
 
   const handleChange = (field, value) => {
     setProduct({
@@ -63,83 +49,93 @@ const AddProduct = ({ open, onClose, onAdd }) => {
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
     if (files.length === 0) {
-      setErrors({ ...errors, images: "At least one image is required." });
+      toast.error("At least one image is required.");
       return;
     }
 
-    setErrors({ ...errors, images: "" });
+    setImageFiles((prevFiles) => [...prevFiles, ...files]);
 
-    const newImages = [];
-    files.forEach((file) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        newImages.push(reader.result);
-        if (newImages.length === files.length) {
-          setProduct((prev) => ({
-            ...prev,
-            images: [...prev.images, ...newImages],
-          }));
-        }
-      };
-      reader.readAsDataURL(file);
-    });
+    // Optional: Generate preview URLs
+    const previews = files.map((file) => URL.createObjectURL(file));
+    setProduct((prev) => ({
+      ...prev,
+      images: [...prev.images, ...previews],
+    }));
+  };
+
+  const handleImageDelete = (index) => {
+    setProduct((prev) => ({
+      ...prev,
+      images: prev.images.filter((_, i) => i !== index),
+    }));
+  };
+
+  const handleVariantDelete = (index) => {
+    setProduct((prev) => ({
+      ...prev,
+      variants: prev.variants.filter((_, i) => i !== index),
+    }));
   };
 
   const validateForm = () => {
     let formIsValid = true;
-    let tempErrors = { ...errors };
 
     if (!product.name) {
-      tempErrors.name = "Product name is required.";
+      toast.error("Product name is required.");
+      formIsValid = false;
+    } else if (isNaN(product.price) || product.price <= 0) {
+      toast.error("Price must be a valid number greater than zero.");
+      formIsValid = false;
+    } else if (imageFiles.length === 0) { // Check imageFiles instead of product.images
+      toast.error("At least one image is required.");
+      formIsValid = false;
+    } else if (product.description === "") {
+      toast.error("Description is required.");
+      formIsValid = false;
+    } else if (product.category === "") {
+      toast.error("Category is required.");
+      formIsValid = false;
+    } else if (product.variants.length === 0) {
+      toast.error("At least one variant is required.");
       formIsValid = false;
     } else {
-      tempErrors.name = "";
+      product.variants.forEach((variant, index) => {
+        if (!variant.size || !variant.color || !variant.stock) {
+          toast.error("All variant fields (size, color, stock) must be filled.");
+          formIsValid = false;
+        }
+      });
     }
 
-    if (isNaN(product.price) || product.price <= 0) {
-      tempErrors.price = "Price must be a valid number greater than zero.";
-      formIsValid = false;
-    } else {
-      tempErrors.price = "";
-    }
 
-    if (product.images.length === 0) {
-      tempErrors.images = "At least one image is required.";
-      formIsValid = false;
-    } else {
-      tempErrors.images = "";
-    }
-
-    // Validate variants
-    let variantErrors = "";
-    product.variants.forEach((variant, index) => {
-      if (!variant.size || !variant.color || !variant.stock) {
-        variantErrors = "All variant fields (size, color, stock) must be filled.";
-        formIsValid = false;
-      }
-    });
-    tempErrors.variants = variantErrors;
-
-    setErrors(tempErrors);
     return formIsValid;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (validateForm()) {
-      onAdd(product);
-      onClose();
-      resetForm(); // Reset the form after successful submit
+      try {
+        const formData = new FormData();
+        formData.append("name", product.name);
+        formData.append("price", product.price);
+        formData.append("description", product.description);
+        formData.append("category", product.category);
+        formData.append("tags", product.tags);
+          formData.append("variants", JSON.stringify(product.variants));
+
+        imageFiles.forEach((file) => {
+          formData.append("images", file);
+        });
+
+        await onAdd(formData); // Ensure onAdd handles FormData appropriately
+      } catch (error) {
+        // Handle error appropriately
+        console.error("Error adding product:", error);
+      }
     }
   };
 
   const resetForm = () => {
-    setProduct(initialProductState);
-    setErrors({
-      name: "",
-      price: "",
-      images: "",
-      variants: "",
-    });
+    setImageFiles([]);
   };
 
   const handleCancel = () => {
@@ -167,8 +163,6 @@ const AddProduct = ({ open, onClose, onAdd }) => {
             fullWidth
             value={product.name}
             onChange={(e) => handleChange("name", e.target.value)}
-            error={!!errors.name}
-            helperText={errors.name}
           />
           <TextField
             label="Price"
@@ -176,8 +170,6 @@ const AddProduct = ({ open, onClose, onAdd }) => {
             type="number"
             value={product.price}
             onChange={(e) => handleChange("price", e.target.value)}
-            error={!!errors.price}
-            helperText={errors.price}
           />
           <Box>
             <Typography variant="subtitle1" gutterBottom>
@@ -190,24 +182,53 @@ const AddProduct = ({ open, onClose, onAdd }) => {
               onChange={handleImageUpload}
               style={{ marginBottom: "10px" }}
             />
-            {errors.images && <Typography color="error">{errors.images}</Typography>}
             <Box display="flex" flexWrap="wrap" gap={1} mt={2}>
               {product.images.map((image, index) => (
                 <Box
                   key={index}
-                  component="img"
-                  src={image}
-                  alt={`Preview ${index + 1}`}
                   sx={{
-                    width: "100px",
-                    height: "100px",
-                    objectFit: "cover",
-                    borderRadius: 1,
-                    border: "1px solid #e0e0e0",
+                    position: 'relative',
+                    width: '100px',
+                    height: '100px',
+                    '&:hover .delete-icon': {
+                      display: 'flex',
+                    },
                   }}
-                />
+                >
+                  <Box
+                    component="img"
+                    src={image}
+                    alt={`Preview ${index + 1}`}
+                    sx={{
+                      width: '100px',
+                      height: '100px',
+                      objectFit: 'cover',
+                      borderRadius: 1,
+                      border: '1px solid #e0e0e0',
+                      position: 'relative',
+                    }}
+                  />
+                  <IconButton
+                    className="delete-icon"
+                    onClick={() => handleImageDelete(index)}
+                    sx={{
+                      display: 'none',
+                      position: 'absolute',
+                      top: '50%',
+                      left: '50%',
+                      transform: 'translate(-50%, -50%)',
+                      bgcolor: 'rgba(255, 255, 255, 0.8)', // Optional: add background for better visibility
+                      '&:hover': {
+                        bgcolor: 'rgba(255, 255, 255, 1)',
+                      },
+                    }}
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                </Box>
               ))}
             </Box>
+
           </Box>
           <TextField
             label="Description"
@@ -218,60 +239,64 @@ const AddProduct = ({ open, onClose, onAdd }) => {
             onChange={(e) => handleChange("description", e.target.value)}
           />
           <TextField
-            label="Categories (comma-separated)"
+            label="Category"
             fullWidth
-            value={product.categories.join(", ")}
-            onChange={(e) => handleArrayChange("categories", e.target.value)}
+            value={product.category}
+            onChange={(e) => handleChange("category", e.target.value)}
           />
           <TextField
             label="Tags (comma-separated)"
             fullWidth
-            value={product.tags.join(", ")}
+            value={product.tags}
             onChange={(e) => handleArrayChange("tags", e.target.value)}
           />
           <Typography variant="subtitle1" fontWeight="bold">
             Variants:
           </Typography>
           {product.variants.map((variant, index) => (
-            <Box
-              key={index}
-              sx={{
-                display: "flex",
-                gap: 1,
-                mb: 1,
-                p: 1,
-                border: "1px solid #e0e0e0",
-                borderRadius: 1,
-              }}
-            >
-              <TextField
-                label="Size"
-                value={variant.size}
-                onChange={(e) =>
-                  handleVariantChange(index, "size", e.target.value)
-                }
-                size="small"
-              />
-              <TextField
-                label="Color"
-                value={variant.color}
-                onChange={(e) =>
-                  handleVariantChange(index, "color", e.target.value)
-                }
-                size="small"
-              />
-              <TextField
-                label="Stock"
-                type="number"
-                value={variant.stock}
-                onChange={(e) =>
-                  handleVariantChange(index, "stock", e.target.value)
-                }
-                size="small"
-              />
-            </Box>
+            <div key={index} style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <Box
+                key={index}
+                sx={{
+                  display: "flex",
+                  gap: 1,
+                  mb: 1,
+                  p: 1,
+                  border: "1px solid #e0e0e0",
+                  borderRadius: 1,
+                }}
+              >
+                <TextField
+                  label="Size"
+                  value={variant.size}
+                  onChange={(e) =>
+                    handleVariantChange(index, "size", e.target.value)
+                  }
+                  size="small"
+                />
+                <TextField
+                  label="Color"
+                  value={variant.color}
+                  onChange={(e) =>
+                    handleVariantChange(index, "color", e.target.value)
+                  }
+                  size="small"
+                />
+                <TextField
+                  label="Stock"
+                  type="number"
+                  value={variant.stock}
+                  onChange={(e) =>
+                    handleVariantChange(index, "stock", e.target.value)
+                  }
+                  size="small"
+                />
+              </Box>
+              <IconButton onClick={() => handleVariantDelete(index)}>
+                <CloseIcon />
+              </IconButton>
+            </div>
           ))}
-          {errors.variants && <Typography color="error">{errors.variants}</Typography>}
           <Button
             variant="outlined"
             size="small"

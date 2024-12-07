@@ -1,55 +1,54 @@
-import React, { useState, useEffect, useContext } from 'react'
-import useAxios from '../utils/axiosInstance'
-import { useNavigate } from 'react-router-dom'
-import { GoogleLogin } from '@react-oauth/google'
+import React, { useState, useEffect } from 'react'
 import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
-import { UserContext } from '../contexts/UserContext'
 import ProductsAPI from '../api/ProductsAPI'
 import ProductList from '../components/admin/product/ProductList'
 import AddProduct from '../components/admin/product/AddProduct'
 import { Button } from '@mui/material'
 
 const Product = () => {
-  const apiUrl = process.env.REACT_APP_API_URL
-  const axios = useAxios()
-  const navigate = useNavigate()
-  const { user, login, logout } = useContext(UserContext)
-
   // useState
   const [open, setOpen] = useState(false)
   const [products, setProducts] = useState([])
 
-  const handleAddProduct = newProduct => {
-    setProducts([...products, newProduct])
-    
+  
+  const fetchProducts = async () => {
+    try {
+      const response = await ProductsAPI.getAllProducts()
+      if (response.success) {
+
+        setProducts(response.data || []) // Default to an empty array
+      } else {
+        console.log('fetch product', response.data)
+      }
+    } catch (err) {
+      console.log('err', err)
+    }
   }
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(true)
 
   //  Fetching products
   useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        setLoading(true)
-        const response = await ProductsAPI.getAllProducts()
-        if (response.success) {
-          setProducts(response.data || []) // Default to an empty array
-          console.log('Fetched products: ', response.data)
-        } else {
-          setError('Failed to fetch products.')
-        }
-      } catch (err) {
-        setError(err.message || 'Failed to load products.')
-      } finally {
-        setLoading(false)
-      }
-    }
-
+    
     fetchProducts()
   }, [])
 
+  const handleAddProduct = async (formData) => {
+    try {
+      const response = await ProductsAPI.addProduct(formData)
+      if (response.success) {
+        fetchProducts()        
+        setOpen(false)
+        toast.success('Product added successfully!')
+      } else {
+        toast.error(response.message || 'Failed to add product.')
+      }
+      // reload automatically
 
+    } catch (error) {
+      console.log('error', error)
+      toast.error(error.response?.data?.message || 'An error occurred while adding the product.')
+    }
+  }
 
   return (
     <div>
@@ -94,7 +93,7 @@ const Product = () => {
           </tr>
         </thead>
 
-        <ProductList products={products} />
+        <ProductList products={products} setProducts={setProducts} fetchProducts={fetchProducts}/>
       </table>
     </div>
   )

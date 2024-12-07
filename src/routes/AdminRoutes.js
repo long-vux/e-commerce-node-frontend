@@ -6,6 +6,7 @@ import Layout from '../components/admin/layout/Layout';
 import Product from '../Admin/Product';
 import Order from '../Admin/Order';
 import Coupon from '../Admin/Coupon';
+
 const AdminRoutes = () => (
   <Routes>
     <Route path="/dashboard" element={<Layout><Dashboard/></Layout>} />

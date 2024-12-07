@@ -1,24 +1,11 @@
 import React from "react";
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  Typography,
-  Box,
-  Chip,
-  Stack,
-  Grid,
-  Avatar,
-  Divider,
-  IconButton,
-} from "@mui/material";
+import { Dialog, DialogTitle, DialogContent, Typography, Box, Chip, Stack, Grid, Avatar, Divider, IconButton } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 
 const ViewProduct = ({ open, close, product }) => {
   if (!product) return null;
 
-  const { name, price, image, description, categories, tags, variants } = product;
-
+  const { name, price, description, category, tags, variants, images } = product;
   return (
     <Dialog open={open} onClose={close} maxWidth="sm" fullWidth>
       <DialogTitle>
@@ -39,32 +26,36 @@ const ViewProduct = ({ open, close, product }) => {
       <DialogContent>
         <Box display="flex" flexDirection="column" gap={2}>
           {/* Image */}
-          <Box display="flex" justifyContent="center">
+          <Box display="flex" justifyContent="center" mb={2}>
             <Avatar
-              src={image}
-              alt={name}
+              src={images[0]}
               variant="square"
-              sx={{ width: 150, height: 150 }}
+              sx={{ width: 200, height: 200, borderRadius: 2 }}
             />
           </Box>
+          <div className="flex justify-start gap-2">
+            {images?.map((image, index) => (
+              <Avatar key={index} src={image} variant="square" sx={{ width: 100, height: 100, borderRadius: 2 }} />
+            ))}
+          </div>
 
           {/* Product Info */}
           <Box>
             <Typography variant="h5" fontWeight="bold" textAlign="center">
-              {name}
+              {name || 'No name'}
             </Typography>
             <Typography
               variant="body1"
               color="text.secondary"
               textAlign="center"
             >
-              ${price.toFixed(2)}
+              ${price?.toFixed(2) || '0.00'}
             </Typography>
           </Box>
 
           {/* Description */}
           <Typography variant="body2" color="text.secondary" textAlign="center">
-            {description}
+            {description || 'No description'}
           </Typography>
 
           {/* Categories */}
@@ -72,11 +63,10 @@ const ViewProduct = ({ open, close, product }) => {
             <Typography variant="subtitle1" fontWeight="bold">
               Categories:
             </Typography>
-            <Stack direction="row" spacing={1} flexWrap="wrap">
-              {categories.map((category, index) => (
-                <Chip key={index} label={category} />
-              ))}
-            </Stack>
+            <Chip
+              key={category}
+              label={category || 'No category'}
+            />
           </Box>
 
           {/* Tags */}
@@ -85,7 +75,7 @@ const ViewProduct = ({ open, close, product }) => {
               Tags:
             </Typography>
             <Stack direction="row" spacing={1} flexWrap="wrap">
-              {tags.map((tag, index) => (
+              {tags?.map((tag, index) => (
                 <Chip key={index} label={tag} variant="outlined" />
               ))}
             </Stack>
@@ -97,7 +87,7 @@ const ViewProduct = ({ open, close, product }) => {
               Variants:
             </Typography>
             <Grid container spacing={2}>
-              {variants.map((variant, index) => (
+              {variants?.map((variant, index) => (
                 <Grid
                   item
                   xs={6}

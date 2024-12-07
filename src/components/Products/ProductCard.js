@@ -10,7 +10,7 @@ function ProductCard({ product }) {
   }
 
   // convert sold to k if it is greater than 1000
-  const formattedSold = totalSold > 1000 ? (totalSold / 1000).toFixed(1) + 'k' : totalSold;
+  const formattedSold = totalSold > 1000 ? (totalSold / 1000) + 'k' : totalSold;
 
   return (
     <div className="relative p-4 rounded-2xl bg-white shadow-lg hover:scale-105 transition-all duration-300 ">
@@ -19,7 +19,7 @@ function ProductCard({ product }) {
         <h3 className="text-[18px] font-semibold cursor-pointer" onClick={() => navigate(`/product/${productId}`)}>{truncateName(name)}</h3>
         <div className='flex flex-row justify-between items-center gap-2 w-full'>
           <p className="text-[14px] ">sold {formattedSold} </p>
-          <p className="text-[20px] text-red-500 font-semibold">{price.toFixed(2)}$</p>
+          <p className="text-[20px] text-red-500 font-semibold">{price}$</p>
         </div>
       </div>
     </div>

@@ -1,5 +1,4 @@
 // src/api/ProductsAPI.js
-import useAxios from '../utils/axiosInstance'; // Hook with authorization handling
 import axios from "axios"; // For non-authorized requests
 
 const BASE_URL = process.env.REACT_APP_API_URL;
@@ -45,46 +44,56 @@ const ProductsAPI = {
     }
   },
 
-//   // Add a new product (requires authorization)
-//   addProduct: async (productData) => {
-//     try {
-//       const axiosInstance = useAxios(); // Use hook for authorized instance
-//       const response = await axiosInstance.post(`api/add-product`, productData, {
-//         headers: {
-//           "Content-Type": "application/json",
-//         },
-//       });
-//       return response.data;
-//     } catch (error) {
-//       throw new Error(error.response?.data?.message || "Failed to add product");
-//     }
-//   },
+  // Add a new product (requires authorization)
+  addProduct: async (formData) => {
+    const token = localStorage.getItem('token');
+    const cleanToken = token.replace(/['"]/g, '');
+    try {
+      const response = await axios.post(`${BASE_URL}api/admin/add-product`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          authorization: `Bearer ${cleanToken}`,
+        },
+      });
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || "Failed to add product");
+    }
+  },
 
-//   // Update a product by ID (requires authorization)
-//   updateProduct: async (id, productData) => {
-//     try {
-//       const axiosInstance = useAxios(); // Use hook for authorized instance
-//       const response = await axiosInstance.put(`api/product/${id}`, productData, {
-//         headers: {
-//           "Content-Type": "application/json",
-//         },
-//       });
-//       return response.data;
-//     } catch (error) {
-//       throw new Error(error.response?.data?.message || "Failed to update product");
-//     }
-//   },
+  // Update a product by ID (requires authorization)
+  updateProduct: async (productId, formData) => {
+    console.log('formData: ', formData)
+    try {
+      const token = localStorage.getItem('token');
+      const cleanToken = token.replace(/['"]/g, '');
+      const response = await axios.put(`${BASE_URL}api/admin/update-product/${productId}`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          authorization: `Bearer ${cleanToken}`,
+        },
+      });
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || "Failed to update product");
+    }
+  },
 
-//   // Delete a product by ID (requires authorization)
-//   deleteProduct: async (id) => {
-//     try {
-//       const axiosInstance = useAxios(); // Use hook for authorized instance
-//       const response = await axiosInstance.delete(`api/product/${id}`);
-//       return response.data;
-//     } catch (error) {
-//       throw new Error(error.response?.data?.message || "Failed to delete product");
-//     }
-//   },
+  // Delete a product by ID (requires authorization)
+  deleteProduct: async (id) => {
+    try {
+      const token = localStorage.getItem('token');
+      const cleanToken = token.replace(/['"]/g, '');
+      const response = await axios.delete(`${BASE_URL}api/admin/delete-product/${id}`, {
+        headers: {
+          authorization: `Bearer ${cleanToken}`,
+        },
+      });
+      return response.data;
+    } catch (error) {
+      throw new Error(error.response?.data?.message || "Failed to delete product");
+    }
+  },
 };
 
 export default ProductsAPI;

@@ -82,7 +82,7 @@ const Profile = () => {
     closeModal();
   };
 
-  const handleProfileUpdate = async () => {
+  const handleProfileUpdate = async () => { 
     try {
       const formData = new FormData();
       formData.append('firstName', editedUser.firstName);
