@@ -1,13 +1,12 @@
 import React, { useState } from 'react'
-import ProductCard from './ProductCard'
-
 import Pagination from '@mui/material/Pagination'
 import PaginationItem from '@mui/material/PaginationItem'
 import Stack from '@mui/material/Stack'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward'
+import ProductRow from './ProductRow'
 
-function ProductList ({ products = [] }) {
+const ProductList = ({ products }) => {
   const [page, setPage] = useState(1)
   const productsPerPage = 12
 
@@ -23,30 +22,52 @@ function ProductList ({ products = [] }) {
 
   const handleChangePage = (event, value) => {
     setPage(value)
+  } 
+   const [productList, setProductList] = useState(products);
+
+
+  const handleDelete = productId => {
+    // Logic to delete the product
+    setProductList(prevList =>
+      prevList.filter(product => product._id !== productId)
+    )
+    console.log(`Product with ID ${productId} deleted`)
   }
 
+  const handleEdit = updatedProduct => {
+    // Logic to update the product
+    setProductList(prevList =>
+      prevList.map(product =>
+        product._id === updatedProduct._id ? updatedProduct : product
+      )
+    )
+    console.log('Updated Product:', updatedProduct)
+  }
   return (
-    <div className='flex flex-col gap-6'>
-      {/* Product Grid */}
-      <div className='grid grid-cols-2 md:grid-cols-4 gap-4'>
+    <>
+      <tbody>
         {currentProducts.length > 0 ? (
           currentProducts.map((product, index) => (
-            <ProductCard key={product._id || index} product={product} />
+            <ProductRow
+              key={product._id}
+              product={product}
+              onDelete={handleDelete}
+              onEdit={handleEdit}
+            />
           ))
         ) : (
           <p className='col-span-4 text-center text-gray-500'>
             No products available.
           </p>
         )}
-      </div>  
-      
-      
+      </tbody>
+
       {/* Pagination */}
       <Stack spacing={2} className='flex justify-center'>
         <Pagination
           count={totalPages}
           page={page}
-          size="large"
+          size='large'
           onChange={handleChangePage}
           renderItem={item => (
             <PaginationItem
@@ -56,7 +77,7 @@ function ProductList ({ products = [] }) {
           )}
         />
       </Stack>
-    </div>
+    </>
   )
 }
 

@@ -13,21 +13,19 @@ const ProductDetail = () => {
   const [variants, setVariants] = useState([]);
   const [selectedVariant, setSelectedVariant] = useState(null);
   const [quantity, setQuantity] = useState(1);
-  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+
 
   useEffect(() => {
-    setIsLoading(true);
     axios.get(`${process.env.REACT_APP_API_URL}api/product/${productId}`)
       .then(res => {
         setProduct(res.data.data.product)
         setVariants(res.data.data.product.variants)
       })
       .catch(err => console.log(err))
-      .finally(() => setIsLoading(false))
   }, [productId])
 
   useEffect(() => {
-    setIsLoading(true);
     axios.get(`${process.env.REACT_APP_API_URL}api/product/category/${product?.category}`)
       .then(res => {
         // exclude the current product
@@ -35,11 +33,9 @@ const ProductDetail = () => {
         setProductByCategory(products)
       })
       .catch(err => console.log(err))
-      .finally(() => setIsLoading(false))
   }, [product?.category])
 
   const handleAddToCart = (id) => {
-    setIsLoading(true);
     if (!selectedVariant) {
       toast.error('Please select a variant');
       return;
@@ -56,8 +52,23 @@ const ProductDetail = () => {
       .catch(err => {
         toast.error('Error adding product to cart');
       })
-      .finally(() => setIsLoading(false))
   };
+
+  const increaseQuantity = () => {
+    setQuantity((prevQuantity) => prevQuantity + 1);
+  };
+
+  const decreaseQuantity = () => {
+    setQuantity((prevQuantity) => (prevQuantity > 1 ? prevQuantity - 1 : 1));
+  };
+
+  if (error) {
+    return <div>Error: {error}</div>; // Show error message
+  }
+
+  if (!product) {
+    return <div>Product not found</div>; // Handle case where product is not found
+  }
 
   return (
     <div className="md:p-20 p-4">
@@ -93,73 +104,95 @@ const ProductDetail = () => {
             <span className="text-gray-500">{product?.totalSold} Sold</span>
           </div>
           <div className="text-2xl font-bold mt-2">{product?.price}$ <span className="text-red-500 line-through">{product?.price * 2}$</span></div>
-          <div className="mt-4">
-            <span className="font-bold">VARIANTS</span>
-            <div className="flex flex-col mt-2">
-              {variants.map((variant, index) => (
-                <div className="flex flex-row justify-start gap-2 items-center" key={index}>
-                  <button className={`border h-10 w-[100px] hover:bg-gray-100 ${selectedVariant === variant.name ? 'bg-gray-200' : ''}`} onClick={() => setSelectedVariant(variant.name)}>{variant.name}</button>
-                  <p className="text-sm text-gray-500">{variant.stock} in stock</p>
-                </div>
-              ))}
+
+          <div className='mt-4'>
+            <span className='font-bold'>SIZE - COLOR</span>
+            <div className='flex mt-2'>
+              <select className='border px-4 py-2 mr-2' onChange={(e) => setSelectedVariant(e.target.value)}>
+                {Array.isArray(product.variants) && product.variants.length > 0 ? (
+                  product.variants.map((variant) => (
+                    <option key={variant._id} value={variant.name}>
+                      {variant.name} ({variant.stock} in stock)
+                    </option>
+                  ))
+                ) : (
+                  <option disabled>No variants available</option>
+                )}
+              </select>
             </div>
           </div>
-          <div className="mt-4">
-            <span className="font-bold">QUANTITY</span>
-            <div className="flex flex-row justify-start gap-2 items-center">
-              <input type="number" className="border h-10 w-10 text-center" value={quantity} onChange={(e) => setQuantity(e.target.value)} />
+          <div className='mt-4'>
+
+            <span className='font-bold'>QUANTITY</span>
+            <div className='flex mt-2 items-center'>
+              <button className='border px-4 py-2' onClick={decreaseQuantity}>-</button>
+              <span className='px-4'>{quantity}</span>
+              <button className='border px-4 py-2' onClick={increaseQuantity}>+</button>
             </div>
           </div>
           <div className="mt-4 flex flex-col gap-2">
             <button className="bg-black text-white px-4 py-2 w-full hover:bg-gray-800" onClick={() => handleAddToCart(product?._id)}>Add to Cart</button>
             <button className="border px-4 py-2 w-full hover:bg-gray-100">Buy Now</button>
           </div>
-          <div className="mt-4">
-            <h2 className="font-bold">DESCRIPTION</h2>
-            <p className="mt-2">Vintage beige Carhartt jacket, fits xx-large.</p>
-            <p className="mt-2"><span className="font-bold">GENDER:</span> mens</p>
-            <p className="mt-2"><span className="font-bold">CONDITION:</span> good - small marks over front and sleeves, sleeve hems fraying slightly.</p>
-            <p className="mt-2"><span className="font-bold">STYLE:</span> jacket</p>
-            <p className="mt-2"><span className="font-bold">ERA:</span> 1990s</p>
-            <p className="mt-2"><span className="font-bold">COLOUR:</span> beige</p>
-            <p className="mt-2"><span className="font-bold">FABRIC:</span> cotton</p>
-            <p className="mt-2"><span className="font-bold">Notes:</span> Size 42</p>
+          <div className='mt-4'>
+            <h2 className='font-bold'>DESCRIPTION</h2>
+            <p className='mt-2'>{product.description}</p>
+
           </div>
         </div>
       </div>
-      <div className="mt-8">
-        <h2 className="font-bold text-lg">Review</h2>
-        <div className="border p-4 mt-2">
-          <div className="flex items-center">
-            <span className="text-yellow-500"><i className="fas fa-star"></i></span>
-            <span className="text-yellow-500"><i className="fas fa-star"></i></span>
-            <span className="text-yellow-500"><i className="fas fa-star"></i></span>
-            <span className="text-yellow-500"><i className="fas fa-star"></i></span>
-            <span className="text-yellow-500"><i className="fas fa-star"></i></span>
-            <span className="ml-2">5/5</span>
+      <div className='mt-8'>
+        <h2 className='font-bold text-lg'>Review</h2>
+        <div className='border p-4 mt-2'>
+          <div className='flex items-center'>
+            <span className='text-yellow-500'>
+              <i className='fas fa-star'></i>
+            </span>
+            <span className='text-yellow-500'>
+              <i className='fas fa-star'></i>
+            </span>
+            <span className='text-yellow-500'>
+              <i className='fas fa-star'></i>
+            </span>
+            <span className='text-yellow-500'>
+              <i className='fas fa-star'></i>
+            </span>
+            <span className='text-yellow-500'>
+              <i className='fas fa-star'></i>
+            </span>
+            <span className='ml-2'>5/5</span>
           </div>
-          <div className="flex mt-2">
-            <button className="border px-4 py-2 mr-2">All</button>
-            <button className="border px-4 py-2 mr-2">1 star</button>
-            <button className="border px-4 py-2 mr-2">2 star</button>
-            <button className="border px-4 py-2 mr-2">3 star</button>
-            <button className="border px-4 py-2 mr-2">4 star</button>
-            <button className="border px-4 py-2">5 star</button>
+          <div className='flex mt-2'>
+            <button className='border px-4 py-2 mr-2'>All</button>
+            <button className='border px-4 py-2 mr-2'>1 star</button>
+            <button className='border px-4 py-2 mr-2'>2 star</button>
+            <button className='border px-4 py-2 mr-2'>3 star</button>
+            <button className='border px-4 py-2 mr-2'>4 star</button>
+            <button className='border px-4 py-2'>5 star</button>
           </div>
-          <div className="mt-4">
-            <button className="border px-4 py-2 w-full">Your review</button>
+          <div className='mt-4'>
+            <button className='border px-4 py-2 w-full'>Your review</button>
           </div>
-          <div className="mt-4">
-            <p className="font-bold">Alex</p>
-            <p className="text-sm text-gray-500">16 days ago</p>
-            <p className="mt-2">Great jacket, very nice to wear. Keeps the wind out. Just note the size, anyone taller than 6'2" should go for a larger size. The color is also a bit darker than the photo but still close. I love it!</p>
-            <button className="text-blue-500 mt-2">Reply</button>
+          <div className='mt-4'>
+            <p className='font-bold'>Alex</p>
+            <p className='text-sm text-gray-500'>16 days ago</p>
+            <p className='mt-2'>
+              Great jacket, very nice to wear. Keeps the wind out. Just note the
+              size, anyone taller than 6'2" should go for a larger size. The
+              color is also a bit darker than the photo but still close. I love
+              it!
+            </p>
+            <button className='text-blue-500 mt-2'>Reply</button>
           </div>
-          <div className="mt-4">
-            <p className="font-bold">Bob</p>
-            <p className="text-sm text-gray-500">1 month ago</p>
-            <p className="mt-2">The jacket is great and the quality is very good. I ordered one size too big and was able to exchange it. The process was smooth and I'm very satisfied!</p>
-            <button className="text-blue-500 mt-2">Reply</button>
+          <div className='mt-4'>
+            <p className='font-bold'>Bob</p>
+            <p className=' text-sm text-gray-500'>1 month ago</p>
+            <p className='mt-2'>
+              The jacket is great and the quality is very good. I ordered one
+              size too big and was able to exchange it. The process was smooth
+              and I'm very satisfied!
+            </p>
+            <button className='text-blue-500 mt-2'>Reply</button>
           </div>
         </div>
       </div>
@@ -170,7 +203,7 @@ const ProductDetail = () => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default ProductDetail;
+export default ProductDetail

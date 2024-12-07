@@ -20,7 +20,7 @@ const Sidebar = () => {
   }
 
   return (
-    <div className='sidebar h-full flex flex-col justify-between'>
+    <div className='sidebar w-full h-full flex flex-col justify-between'>
       <ul className=' h-full m-4 text-[16px] flex flex-col gap-1'>
         <li>
           <NavLink
@@ -39,7 +39,7 @@ const Sidebar = () => {
         <li>
           <NavLink
             exact
-            to='/admin/guest-stay'
+            to='/admin/product'
             className={({ isActive }) =>
               `flex items-center hover:bg-[#F5F7F8]  gap-4 p-2 ${
                 isActive ? activeStyle : inactiveStyle
@@ -47,12 +47,12 @@ const Sidebar = () => {
             }
           >
             <PeopleOutline />
-            <span>Guests & Stays</span>
+            <span>Product</span>
           </NavLink>
         </li>
         <li>
           <NavLink
-            to='/admin/reservation'
+            to='/admin/order'
             className={({ isActive }) =>
               `hover:bg-[#F5F7F8] flex items-center gap-4 p-2 ${
                 isActive ? activeStyle : inactiveStyle
@@ -60,12 +60,12 @@ const Sidebar = () => {
             }
           >
             <CalendarMonth />
-            <span>Reservation</span>
+            <span>Order</span>
           </NavLink>
         </li>
         <li>
           <NavLink
-            to='/admin/room'
+            to='/admin/coupon'
             className={({ isActive }) =>
               `hover:bg-[#F5F7F8] flex items-center gap-4 p-2 ${
                 isActive ? activeStyle : inactiveStyle
@@ -73,37 +73,10 @@ const Sidebar = () => {
             }
           >
             <KingBed />
-            <span>Room</span>
+            <span>Coupon</span>
           </NavLink>
         </li>
-        {userData.role === 'Admin' && (
-          <li>
-            <NavLink
-              to='/admin/employee'
-              className={({ isActive }) =>
-                `hover:bg-[#F5F7F8] flex items-center gap-4 p-2 ${
-                  isActive ? activeStyle : inactiveStyle
-                } `
-              }
-            >
-              <PeopleOutline />
-              <span>Employee</span>
-            </NavLink>
-          </li>
-        )}
-        <li>
-          <NavLink
-            to='/admin/payment'
-            className={({ isActive }) =>
-              `hover:bg-[#F5F7F8] flex items-center gap-4 p-2 ${
-                isActive ? activeStyle : inactiveStyle
-              } `
-            }
-          >
-            <Payment />
-            <span>Payment</span>
-          </NavLink>
-        </li>
+
         <li onClick={handleLogout} className='cursor-pointer'>
           <NavLink
             to='/login'

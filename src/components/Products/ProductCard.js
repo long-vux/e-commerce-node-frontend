@@ -23,7 +23,7 @@ function ProductCard({ product }) {
         </div>
       </div>
     </div>
-  );
+  )
 }
 
-export default ProductCard;
+export default ProductCard

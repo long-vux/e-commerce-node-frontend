@@ -201,22 +201,18 @@ const Profile = () => {
         {/* Navigation Section */}
         <div className="md:w-1/5 w-full mr-4">
           {/* Navigation Buttons */}
-          <button className="flex items-center mb-4 bg-white p-4 border w-full" onClick={() => navigate('/profile')}>
-            <Person2Outlined sx={{ fontSize: 24, marginRight: 1 }} />
-            <span className="text-lg">My Profile</span>
+          <button className="flex items-center mb-4 p-4 border w-full bg-black text-white " onClick={() => navigate('/profile')}>
+            <Person2Outlined sx={{ fontSize: 30, marginRight: 1 }} />
+            <span className="text-xl">My Profile</span>
           </button>
-          <button className="flex items-center mb-4 bg-white p-4 border w-full" onClick={() => navigate('/cart')}>
-            <ShoppingBagOutlined sx={{ fontSize: 24, marginRight: 1 }} />
-            <span className="text-lg">My Purchase</span>
-          </button>
-          <button className="flex items-center mb-4 bg-white p-4 border w-full" onClick={() => navigate('/change-password')}>
-            <LockResetOutlined sx={{ fontSize: 24, marginRight: 1 }} />
-            <span className="text-lg">Change Password</span>
+          <button className="flex items-center mb-4 bg-white p-4 border w-full hover:bg-black hover:text-white transition-all duration-300" onClick={() => navigate('/cart')}>
+            <ShoppingBagOutlined sx={{ fontSize: 30, marginRight: 1 }} />
+            <span className="text-xl">My Purchase</span>
           </button>
           {user && (
-            <button className="flex items-center mb-4 bg-white p-4 border w-full" onClick={handleLogout}>
-              <LogoutOutlined sx={{ fontSize: 24, marginRight: 1 }} />
-              <span className="text-lg">Log out</span>
+            <button className="flex items-center mb-4 bg-white p-4 border w-full hover:bg-black hover:text-white transition-all duration-300" onClick={handleLogout}>
+              <LogoutOutlined sx={{ fontSize: 30, marginRight: 1 }} />
+              <span className="text-xl">Log out</span>
             </button>
           )}
         </div>
