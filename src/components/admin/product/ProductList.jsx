@@ -5,13 +5,17 @@ import Stack from '@mui/material/Stack'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward'
 import ProductRow from './ProductRow'
+import ProductsAPI from '../../../api/ProductsAPI'
+import { toast } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 
-const ProductList = ({ products }) => {
+const ProductList = ({ products, setProducts, fetchProducts }) => {
   const [page, setPage] = useState(1)
   const productsPerPage = 12
 
   // Determine the products for the current page
   const startIndex = (page - 1) * productsPerPage
+
   const currentProducts = products.slice(
     startIndex,
     startIndex + productsPerPage
@@ -22,26 +26,44 @@ const ProductList = ({ products }) => {
 
   const handleChangePage = (event, value) => {
     setPage(value)
-  } 
-   const [productList, setProductList] = useState(products);
-
-
-  const handleDelete = productId => {
-    // Logic to delete the product
-    setProductList(prevList =>
-      prevList.filter(product => product._id !== productId)
-    )
-    console.log(`Product with ID ${productId} deleted`)
   }
 
-  const handleEdit = updatedProduct => {
-    // Logic to update the product
-    setProductList(prevList =>
-      prevList.map(product =>
-        product._id === updatedProduct._id ? updatedProduct : product
-      )
-    )
-    console.log('Updated Product:', updatedProduct)
+
+  const handleDelete = async (productId) => {
+    try {
+      const response = await ProductsAPI.deleteProduct(productId)
+      if (response.success) {
+        toast.success('Product deleted successfully!')
+        setProducts(prevList =>
+          prevList.filter(product => product._id !== productId)
+        )
+        console.log(`Product with ID ${productId} deleted`)
+      } else {
+        toast.error(response.message || 'Failed to delete product.')
+      }
+    } catch (error) {
+      console.error('Error deleting product:', error)
+    }
+  }
+
+  const handleEdit = async (productId, formData) => {
+    try {
+      const response = await ProductsAPI.updateProduct(productId, formData)
+      console.log('response: ', response)
+      if (response.success) {
+        fetchProducts()
+        toast.success('Product updated successfully!')
+        setProducts(prevList =>
+          prevList.map(product =>
+            product._id === productId ? response.data : product
+          )
+        )
+      } else {
+        toast.error(response.message || 'Failed to update product.')
+      }
+    } catch (error) {
+      console.error('Error updating product:', error)
+    }
   }
   return (
     <>
@@ -52,7 +74,7 @@ const ProductList = ({ products }) => {
               key={product._id}
               product={product}
               onDelete={handleDelete}
-              onEdit={handleEdit}
+              onEdit={(formData) => handleEdit(product._id, formData)}
             />
           ))
         ) : (

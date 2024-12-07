@@ -32,13 +32,17 @@ const ProductRow = ({ product, onDelete, onEdit }) => {
     setOpenDeleteModal(false);
   };
 
+  console.log('product: ', product)
+
+  
+
   return (
     <>
       <TableRow>
         {/* Thumbnail */}
         <TableCell align="center">
           <Avatar
-            src={product.image}
+            src={product.images[0]}
             alt={product.name}
             sx={{ width: 60, height: 60 }}
             variant="rounded"
@@ -58,7 +62,7 @@ const ProductRow = ({ product, onDelete, onEdit }) => {
         {/* Tags */}
         <TableCell>
           <Stack direction="row" spacing={1} flexWrap="wrap">
-            {product.tags.map((tag) => (
+            {product.tags?.map((tag) => (
               <Chip
                 key={tag}
                 label={tag}
@@ -75,20 +79,16 @@ const ProductRow = ({ product, onDelete, onEdit }) => {
 
         {/* Categories */}
         <TableCell>
-          <Stack direction="row" spacing={1} flexWrap="wrap">
-            {product.categories.map((cat) => (
-              <Chip
-                key={cat}
-                label={cat}
-                sx={{
-                  backgroundColor: 'black',
-                  color: 'white',
-                  fontSize: '0.75rem',
-                  margin: '2px',
-                }}
-              />
-            ))}
-          </Stack>
+          <Chip
+            key={product.category}
+            label={product.category}
+            sx={{
+              backgroundColor: 'black',
+              color: 'white',
+              fontSize: '0.75rem',
+              margin: '2px',
+            }}
+          />
         </TableCell>
 
         {/* Actions */}
@@ -113,8 +113,8 @@ const ProductRow = ({ product, onDelete, onEdit }) => {
         <EditProduct
           open={openEdit}
           onClose={handleCloseEdit}
-          onEdit={(updatedProduct) => {
-            onEdit(updatedProduct); // Pass the updated product to the parent
+          onEdit={(formData) => {
+            onEdit(formData);
             handleCloseEdit();
           }}
           productToEdit={product}

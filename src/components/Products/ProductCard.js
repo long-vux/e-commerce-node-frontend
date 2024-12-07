@@ -10,8 +10,7 @@ function ProductCard ({ product }) {
   }
 
   // convert sold to k if it is greater than 1000
-  const formattedSold =
-    totalSold > 1000 ? (totalSold / 1000).toFixed(1) + 'k' : totalSold
+  const formattedSold = totalSold > 1000 ? (totalSold / 1000) + 'k' : totalSold;
 
   return (
     <div
@@ -24,10 +23,8 @@ function ProductCard ({ product }) {
           {truncateName(name)}
         </h3>
         <div className='flex flex-row justify-between items-center gap-2 w-full'>
-          <p className='text-[14px] '>sold {formattedSold} </p>
-          <p className='text-[20px] text-red-500 font-semibold'>
-            {price.toFixed(2)}$
-          </p>
+          <p className="text-[14px] ">sold {formattedSold} </p>
+          <p className="text-[20px] text-red-500 font-semibold">{price}$</p>
         </div>
       </div>
     </div>
