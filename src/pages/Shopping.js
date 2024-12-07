@@ -13,6 +13,7 @@ import Collapse from '@mui/material/Collapse'
 import ExpandLess from '@mui/icons-material/ExpandLess'
 import ExpandMore from '@mui/icons-material/ExpandMore'
 import Checkbox from '@mui/material/Checkbox'
+import CircularProgress from '@mui/material/CircularProgress';
 
 const Shopping = () => {
   const { category } = useParams()
@@ -109,7 +110,7 @@ const Shopping = () => {
     setSelectedFilters(new Array(filters.length).fill([])) // Initialize with empty arrays
   }, [filters.length])
 
-  if (loading) return <p>Loading products...</p>
+  if (loading) return <div className='w-full h-full flex justify-center items-center'> <CircularProgress/> </div>
   if (error) return <p>Error: {error}</p>
 
   const handleAddToCart = id => {
@@ -186,6 +187,7 @@ const Shopping = () => {
     }
   }
 
+  
   return (
     <div className='relative'>
       <div className='relative'>

@@ -1,4 +1,10 @@
-import React, { useState, useRef, useEffect, useCallback, useContext } from 'react'
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useCallback,
+  useContext
+} from 'react'
 import useAxios from '../../utils/axiosInstance'
 import { UserContext } from '../../contexts/UserContext'
 import logo from '../../assets/images/logo.png'
@@ -20,7 +26,7 @@ const categories = {
     {
       title: 'Pant',
       items: ['Polo', 't-shirt', 'Polo', 't-shirt', 'Polo', 't-shirt']
-    } 
+    }
   ],
   women: [
     { title: 'Dresses', items: ['Maxi', 'Midi', 'Mini', 'Casual', 'Formal'] },
@@ -36,42 +42,18 @@ const categories = {
   ]
 }
 
-// const cartItems = [
-//   {
-//     id: 1,
-//     name: 'Wireless Headphones',
-//     price: 99.99,
-//     quantity: 1,
-//     image: 'http://localhost:3000/static/media/item5-1.506f4605917d1b5ddddf.png'
-//   },
-//   {
-//     id: 2,
-//     name: 'Smart Watch',
-//     price: 199.99,
-//     quantity: 2,
-//     image: 'http://localhost:3000/static/media/item5-1.506f4605917d1b5ddddf.png'
-//   },
-//   {
-//     id: 3,
-//     name: 'Bluetooth Speaker',
-//     price: 49.99,
-//     quantity: 3,
-//     image: 'http://localhost:3000/static/media/item5-1.506f4605917d1b5ddddf.png'
-//   }
-// ]
-
 const Header = () => {
-  const apiUrl = process.env.REACT_APP_API_URL;
-  const axios = useAxios();
-  const [cartItems, setCartItems] = useState([]);
-  const displayCartItems = cartItems?.slice(0, 4);
-  const remainingItemsCount = cartItems?.length - displayCartItems?.length;
+  const apiUrl = process.env.REACT_APP_API_URL
+  const axios = useAxios()
+  const [cartItems, setCartItems] = useState([])
+  const displayCartItems = cartItems?.slice(0, 4)
+  const remainingItemsCount = cartItems?.length - displayCartItems?.length
 
   const [isSearchVisible, setIsSearchVisible] = useState(false)
   const [activeCategory, setActiveCategory] = useState(null)
   const [isCartVisible, setIsCartVisible] = useState(false)
 
-  const { user } = useContext(UserContext);
+  const { user } = useContext(UserContext)
 
   const dropdownRef = useRef(null)
   const buttonRef = useRef(null)
@@ -120,8 +102,6 @@ const Header = () => {
     }
   }, [axios, apiUrl, user])
 
-  
-
   const handleNavMouseOver = category => {
     setActiveCategory(category)
   }
@@ -166,29 +146,6 @@ const Header = () => {
                   >
                     {category.toUpperCase()}
                   </Link>
-                  {activeCategory === category && (
-                    <div className='absolute w-[1000px] bg-white shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-50 transition-all duration-300'>
-                      <div className='flex justify-around items-center p-4 w-full'>
-                        {categories[activeCategory]?.map(categoryGroup => (
-                          <div key={categoryGroup.title} className='p-4'>
-                            <h3 className='font-bold'>{categoryGroup.title}</h3>
-                            <ul>
-                              {categoryGroup.items?.map((item, index) => (
-                                <li key={index}>{item}</li>
-                              ))}
-                            </ul>
-                          </div>
-                        ))}
-                        <div>
-                          <img
-                            src={vingtageboy2}
-                            alt='Category'
-                            className='w-48 h-32 object-cover'
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  )}
                 </li>
               ))}
             </ul>
@@ -246,9 +203,9 @@ const Header = () => {
                     ))}
                     <div className='flex justify-between items-center pt-10'>
                       <div className='text-gray-500'>
-                        {
-                          remainingItemsCount > 0 ? `${remainingItemsCount} More Items In Cart` : 'More Details In Cart'
-                        }
+                        {remainingItemsCount > 0
+                          ? `${remainingItemsCount} More Items In Cart`
+                          : 'More Details In Cart'}
                       </div>
                       <button
                         className='bg-black text-white p-2 rounded-md'
