@@ -2,9 +2,63 @@ import React, { useState, useRef, useEffect, useCallback, useContext } from 'rea
 import useAxios from '../../utils/axiosInstance'
 import { UserContext } from '../../contexts/UserContext'
 import logo from '../../assets/images/logo.png'
-import { Search, PersonOutlineOutlined, ShoppingCartOutlined } from '@mui/icons-material'
+import {
+  Search,
+  PersonOutlineOutlined,
+  ShoppingCartOutlined
+} from '@mui/icons-material'
 import CloseIcon from '@mui/icons-material/Close'
+import vingtageboy2 from '../../assets/images/vingtageboy2.png'
 import { Link } from 'react-router-dom'
+
+const categories = {
+  men: [
+    {
+      title: 'Vintage shirt',
+      items: ['Polo', 't-shirt', 'Polo', 't-shirt', 'Polo', 't-shirt']
+    },
+    {
+      title: 'Pant',
+      items: ['Polo', 't-shirt', 'Polo', 't-shirt', 'Polo', 't-shirt']
+    } 
+  ],
+  women: [
+    { title: 'Dresses', items: ['Maxi', 'Midi', 'Mini', 'Casual', 'Formal'] },
+    { title: 'Shoes', items: ['Heels', 'Flats', 'Boots', 'Sneakers'] }
+  ],
+  kid: [
+    { title: 'Dresses', items: ['Maxi', 'Midi', 'Mini', 'Casual', 'Formal'] },
+    { title: 'Shoes', items: ['Heels', 'Flats', 'Boots', 'Sneakers'] }
+  ],
+  unisex: [
+    { title: 'Dresses', items: ['Maxi', 'Midi', 'Mini', 'Casual', 'Formal'] },
+    { title: 'Shoes', items: ['Heels', 'Flats', 'Boots', 'Sneakers'] }
+  ]
+}
+
+// const cartItems = [
+//   {
+//     id: 1,
+//     name: 'Wireless Headphones',
+//     price: 99.99,
+//     quantity: 1,
+//     image: 'http://localhost:3000/static/media/item5-1.506f4605917d1b5ddddf.png'
+//   },
+//   {
+//     id: 2,
+//     name: 'Smart Watch',
+//     price: 199.99,
+//     quantity: 2,
+//     image: 'http://localhost:3000/static/media/item5-1.506f4605917d1b5ddddf.png'
+//   },
+//   {
+//     id: 3,
+//     name: 'Bluetooth Speaker',
+//     price: 49.99,
+//     quantity: 3,
+//     image: 'http://localhost:3000/static/media/item5-1.506f4605917d1b5ddddf.png'
+//   }
+// ]
 
 const Header = () => {
   const apiUrl = process.env.REACT_APP_API_URL;
@@ -14,6 +68,7 @@ const Header = () => {
   const remainingItemsCount = cartItems?.length - displayCartItems?.length;
 
   const [isSearchVisible, setIsSearchVisible] = useState(false)
+  const [activeCategory, setActiveCategory] = useState(null)
   const [isCartVisible, setIsCartVisible] = useState(false)
 
   const { user } = useContext(UserContext);
@@ -48,15 +103,27 @@ const Header = () => {
     }
   }, [isCartVisible, handleCloseCart])
 
-  const fetchCartItems = async () => {
-    console.log('fetching cart items')
-    try {
-      const response = await axios.get(`${apiUrl}api/cart/get-minicart`, { withCredentials: true })
-      console.log('response', response)
-      setCartItems(response.data.items)
-    } catch (err) {
-      console.error(err)
+  useEffect(() => {
+    const fetchCartItems = async () => {
+      try {
+        const response = await axios.get(`${apiUrl}api/cart/get-minicart`)
+        setCartItems(response.data.items)
+      } catch (err) {
+        console.error(err)
+      }
     }
+
+    if (user) {
+      fetchCartItems()
+    } else {
+      setCartItems([])
+    }
+  }, [axios, apiUrl, user])
+
+  
+
+  const handleNavMouseOver = category => {
+    setActiveCategory(category)
   }
 
   const handleSearchClick = () => {
@@ -69,7 +136,7 @@ const Header = () => {
 
   const handleCartClick = () => {
     setIsCartVisible(prev => !prev)
-    fetchCartItems()  
+    console.log(isCartVisible)
   }
 
   return (
@@ -86,20 +153,44 @@ const Header = () => {
               />
             </a>
           </div>
+
+          {/* Navigation Menu */}
           <nav className='mt-4 md:mt-0'>
             <ul className='flex flex-col md:flex-row gap-4 md:gap-16 text-lg font-bold'>
-              <li>
-                <Link to='category/men'>MEN</Link>
-              </li>
-              <li>
-                <Link to='category/women'>WOMEN</Link>
-              </li>
-              <li>
-                <Link to='category/kid'>KID</Link>
-              </li>
-              <li>
-                <Link to='category/unisex'>UNISEX</Link>
-              </li>
+              {Object.keys(categories)?.map(category => (
+                <li key={category} className='relative group'>
+                  <Link
+                    to={`/collection/${category}`}
+                    onMouseOver={() => handleNavMouseOver(category)}
+                    className='hover:text-blue-500 focus:outline-none'
+                  >
+                    {category.toUpperCase()}
+                  </Link>
+                  {activeCategory === category && (
+                    <div className='absolute w-[1000px] bg-white shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-50 transition-all duration-300'>
+                      <div className='flex justify-around items-center p-4 w-full'>
+                        {categories[activeCategory]?.map(categoryGroup => (
+                          <div key={categoryGroup.title} className='p-4'>
+                            <h3 className='font-bold'>{categoryGroup.title}</h3>
+                            <ul>
+                              {categoryGroup.items?.map((item, index) => (
+                                <li key={index}>{item}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        ))}
+                        <div>
+                          <img
+                            src={vingtageboy2}
+                            alt='Category'
+                            className='w-48 h-32 object-cover'
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </li>
+              ))}
             </ul>
           </nav>
 
@@ -148,8 +239,7 @@ const Header = () => {
                             </div>
                           </div>
                         </div>
-                        <div className='absolute flex items-center gap-2 right-2 bottom-2'>
-                          {item.variant && <div className='text-gray-500'>{item.variant}</div>}
+                        <div className='absolute right-2 bottom-2'>
                           <button>x{item.quantity}</button>
                         </div>
                       </div>
@@ -162,7 +252,7 @@ const Header = () => {
                       </div>
                       <button
                         className='bg-black text-white p-2 rounded-md'
-                        onClick={() => (window.location.href = '/cart')}
+                        onClick={() => (window.location.href = './cart')}
                       >
                         View Cart
                       </button>

@@ -14,7 +14,7 @@ import Shopping from '../pages/Shopping'
 import ProductDetail from '../pages/ProductDetail'
 import Checkout from '../pages/Checkout'
 const MainRoutes = () => (
-  <>
+  <div className='overflow-x-hidden'>
     <Header />
     <Routes>
       <Route path="/login" element={<LoginSignup />} />
@@ -40,7 +40,7 @@ const MainRoutes = () => (
       <Route path='/' element={<Home />} />
     </Routes>
     <Footer />
-  </>
+  </div>
 )
 
 export default MainRoutes
