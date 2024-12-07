@@ -39,6 +39,7 @@ const Profile = () => {
   const [street, setStreet] = useState('');
   const [receiverName, setReceiverName] = useState('');
   const [receiverPhone, setReceiverPhone] = useState(user?.phone || '');
+  const [deliveryCode, setDeliveryCode] = useState('');
 
   const [error, setError] = useState('');
 
@@ -123,6 +124,7 @@ const Profile = () => {
           district: selectedDistrict,
           ward: selectedWard,
           street,
+          deliveryCode,
           receiverName,
           receiverPhone,
         });
@@ -133,6 +135,7 @@ const Profile = () => {
           district: selectedDistrict,
           ward: selectedWard,
           street,
+          deliveryCode,
           receiverName,
           receiverPhone,
         });
@@ -300,8 +303,7 @@ const Profile = () => {
                     </>
                   )}
                   <p>
-                    <strong>Address:</strong> {address.street}, {address.ward},{' '}
-                    {address.district}, {address.province}
+                    <strong>Address:</strong> {address.street}, {address.ward}, {address.district}, {address.province}
                   </p>
                   <p>
                     <strong>Receiver Name:</strong> {address.receiverName}
@@ -381,21 +383,21 @@ const Profile = () => {
           <TextField
             select
             label="Province"
-            value={provinces.find((p) => p.name === selectedProvince)?.code}
+            value={provinces.find((p) => p.name === selectedProvince)?.id}
             onChange={(e) => {
-              const provinceCode = e.target.value;
-              const provinceName = provinces.find((p) => p.code === provinceCode)?.name;
+              const provinceId = e.target.value;
+              const provinceName = provinces.find((p) => p.id === provinceId)?.name;
               setSelectedProvince(provinceName);
-              getDistricts(provinceCode).then(setDistricts);
+              getDistricts(provinceId).then(setDistricts);
               setSelectedDistrict('');
-              setSelectedWard('');
+              setSelectedWard('');  
               setWards([]);
             }}
             fullWidth
             margin="normal"
           >
             {provinces.map((province) => (
-              <MenuItem key={province.code} value={province.code}>
+              <MenuItem key={province.id} value={province.id}>
                 {province.name}
               </MenuItem>
             ))}
@@ -403,20 +405,21 @@ const Profile = () => {
           <TextField
             select
             label="District"
-            value={districts.find((d) => d.name === selectedDistrict)?.code}
+            value={districts.find((d) => d.name === selectedDistrict)?.id}
             onChange={(e) => {
-              const districtCode = e.target.value;
-              const districtName = districts.find((d) => d.code === districtCode)?.name;
+              const districtId = e.target.value;
+              const districtName = districts.find((d) => d.id === districtId)?.name;
               setSelectedDistrict(districtName);
-              getWards(districtCode).then(setWards);
+              getWards(districtId).then(setWards);
               setSelectedWard('');
+              setDeliveryCode(districtId);
             }}
             fullWidth
             margin="normal"
             disabled={!selectedProvince}
           >
             {districts.map((district) => (
-              <MenuItem key={district.code} value={district.code}>
+              <MenuItem key={district.id} value={district.id}>
                 {district.name}
               </MenuItem>
             ))}
@@ -424,18 +427,14 @@ const Profile = () => {
           <TextField
             select
             label="Ward"
-            value={wards.find((w) => w.name === selectedWard)?.code}
-            onChange={(e) => {
-              const wardCode = e.target.value;
-              const wardName = wards.find((w) => w.code === wardCode)?.name;
-              setSelectedWard(wardName);
-            }}
+            value={selectedWard}
+            onChange={(e) => setSelectedWard(e.target.value)}
             fullWidth
             margin="normal"
             disabled={!selectedDistrict}
           >
             {wards.map((ward) => (
-              <MenuItem key={ward.code} value={ward.code}>
+              <MenuItem key={ward.id} value={ward.name}>
                 {ward.name}
               </MenuItem>
             ))}

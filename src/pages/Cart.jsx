@@ -1,96 +1,160 @@
 import React, { useState, useEffect, useContext } from 'react'
-import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined'
+import { ShoppingCartOutlined, DeleteOutlineOutlined } from '@mui/icons-material'
 import Checkbox from '@mui/material/Checkbox'
 import emptyCart2 from '../assets/utilities/emptyCart.png'
 import useAxios from '../utils/axiosInstance'
 import { UserContext } from '../contexts/UserContext'
-
-import img1 from '../assets/images/item6-1.png'
+import { toast } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
+import { useNavigate } from 'react-router-dom'
+import { Modal, Box, Typography, Button, Radio, RadioGroup, FormControlLabel } from '@mui/material'
 
 const Cart = () => {
   const apiUrl = process.env.REACT_APP_API_URL
   const { user } = useContext(UserContext)
   const axios = useAxios()
+  const navigate = useNavigate()
 
-  // Initializing state for cart items
+  // Initializing state for cart items and coupons
   const [cartItems, setCartItems] = useState([])
+  const [coupons, setCoupons] = useState([])
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [selectedCoupon, setSelectedCoupon] = useState(null)
+  const [discount, setDiscount] = useState(0)
+  const [finalTotal, setFinalTotal] = useState(0)
+  const [addresses, setAddresses] = useState([])
+  const [shippingFee, setShippingFee] = useState(0)
+  const [districtId, setDistrictId] = useState(null)
 
-  // Dummy cart items data
-  const CartItems = [
-    {
-      prodName: 'Y2K T-SHIRT',
-      prodPrice: 10,
-      prodQuantity: 1,
-      prodImage: img1,
-      prodSize: 'XL',
-      prodColor: 'Black',
-      availableSizes: ['S', 'M', 'L', 'XL'],
-      availableColors: ['Black', 'White', 'Red']
-    }
-  ]
-
-  
   useEffect(() => {
-    const fetchCartItems = async () => {
-      try {
-        const response = await axios.get(`${apiUrl}api/cart/get-cart`)
-        setCartItems(response.data.cart.items)
-        console.log(response.data.cart.items)
-      } catch (err) {
-        console.error(err)
-      }
-    }
-
-    if (user) {
-      fetchCartItems()
-    } else {
-      setCartItems([])
-    }
+    fetchCartItems()
+    fetchCoupons()
+    fetchAddresses()
   }, [axios, apiUrl, user])
 
+  const fetchCartItems = async () => {
+    try {
+      const response = await axios.get(`${apiUrl}api/cart/get-cart`, { withCredentials: true })
+      setCartItems(response.data.cart.items)
+      calculateFinalTotal(response.data.cart.items, discount)
+    } catch (err) {
+      console.error(err)
+    }
+  }
 
-  // Updating the state with CartItems
-  useEffect(() => {
-    setCartItems(CartItems)
-  }, [])
+  const fetchCoupons = async () => {
+    try {
+      const response = await axios.get(`${apiUrl}api/coupon/getAll`, { withCredentials: true })
+      setCoupons(response.data)
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  const fetchAddresses = async () => {
+    if (!user) return
+    try { 
+      const response = await axios.get(`${apiUrl}api/user/addresses`, { withCredentials: true })
+      setAddresses(response.data.data)
+      console.log('addresses', response.data.data)
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  const handleDelete = (id, variant) => {
+    axios.delete(`${apiUrl}api/cart/remove-item`, {
+      data: {
+        productId: id,
+        variant: variant
+      },
+      withCredentials: true
+    })
+      .then(res => {
+        fetchCartItems()
+        toast.success('Item removed from cart')
+      })
+      .catch(err => {
+        console.error(err)
+        toast.error('Failed to remove item from cart')
+      })
+  }
 
   // Handle quantity change
-  const handleQuantityChange = (index, value) => {
-    const updatedCartItems = [...cartItems]
-    updatedCartItems[index].prodQuantity = value
-    setCartItems(updatedCartItems)
-  }
+  const handleQuantityChange = (id, variant, newQuantity) => {
+    setCartItems(prevItems =>
+      prevItems.map(item =>
+        item.product._id === id && item.variant === variant
+          ? { ...item, quantity: newQuantity, price: item.product.price * newQuantity }
+          : item
+      )
+    )
 
-  // Handle size change
-  const handleSizeChange = (index, value) => {
-    const updatedCartItems = [...cartItems]
-    updatedCartItems[index].prodSize = value
-    setCartItems(updatedCartItems)
-  }
-
-  // Handle color change
-  const handleColorChange = (index, value) => {
-    const updatedCartItems = [...cartItems]
-    updatedCartItems[index].prodColor = value
-    setCartItems(updatedCartItems)
+    // Optional: Update the backend immediately
+    axios.put(`${apiUrl}api/cart/update-item`, {
+      productId: id,
+      variant: variant,
+      quantity: newQuantity
+    }, { withCredentials: true })
+      .then(res => {
+        // Optionally refetch to ensure consistency
+        fetchCartItems()
+      })
+      .catch(err => {
+        console.error(err)
+        toast.error('Failed to update cart')
+        // Optionally, revert the quantity change if the update fails
+        fetchCartItems()
+      })
   }
 
   // Calculate total price of cart
   const calculateTotalPrice = () => {
-    return cartItems?.reduce(
-      (total, item) => total + item.prodPrice * item.prodQuantity,
-      0
-    )
+    return cartItems.reduce((total, item) => total + item.price, 0)
+  }
+
+  // Calculate final total after discount and shipping
+  const calculateFinalTotal = (items, appliedDiscount) => {
+    const total = items.reduce((sum, item) => sum + item.price, 0)
+    const shipping = 2
+    const discountedTotal = total - appliedDiscount + shipping
+    setFinalTotal(discountedTotal)
+  }
+
+  // Handle Apply Coupon
+  const handleApplyCoupon = () => {
+    setIsModalOpen(true)
+  }
+
+  // Confirm applying the selected coupon
+  const confirmApplyCoupon = () => {
+    if (!selectedCoupon) {
+      toast.error('Please select a coupon to apply')
+      return
+    }
+
+    const coupon = coupons.find(c => c._id === selectedCoupon)
+    if (!coupon) {
+      toast.error('Invalid coupon selected')
+      return
+    }
+
+    const total = calculateTotalPrice()
+    const calculatedDiscount = (total * coupon.discountPercentage) / 100
+    setDiscount(calculatedDiscount)
+    calculateFinalTotal(cartItems, calculatedDiscount)
+    toast.success(`Coupon "${coupon.code}" applied! You saved $${calculatedDiscount.toFixed(2)}`)
+    setIsModalOpen(false)
   }
 
   return (
     <div className='p-10 border w-full h-full'>
       <h1 className='text-[30px] font-semibold mb-5'>
-        SHOPPING CART <ShoppingCartOutlinedIcon />
+        SHOPPING CART <ShoppingCartOutlined />
       </h1>
 
       {/* Conditional rendering based on cartItems length */}
-      {!cartItems ? (
+      {cartItems.length === 0 ? (
         <div className='w-full h-full flex flex-col justify-center items-center'>
           <h1 className='md:text-[30px] text-[20px] font-semibold'>Your cart is empty</h1>
           <img src={emptyCart2} alt='Empty Cart' className='w-1/2' />
@@ -110,7 +174,7 @@ const Cart = () => {
               </tr>
             </thead>
             <tbody>
-              {cartItems?.map((item, index) => (
+              {cartItems.map((item, index) => (
                 <tr key={index} className='border'>
                   <td className='p-3 flex gap-1'>
                     <div className='h-[140px] flex justify-center items-center'>
@@ -118,57 +182,39 @@ const Cart = () => {
                     </div>
                     <div className='w-[140px] h-[140px] border'>
                       <img
-                        src={item.prodImage}
-                        alt={item.prodName}
+                        src={item.product.image}
+                        alt={item.product.name}
                         className='object-cover w-full h-full'
                       />
                     </div>
-                    <div className='ml-3'>
-                      <p className='text-[18px] font-bold'>{item.prodName}</p>
+                    <div className='ml-3 flex items-center cursor-pointer' onClick={() => navigate(`/product/${item.product._id}`)}>
+                      <p className='text-[18px] font-bold'>{item.product.name}</p>
                     </div>
                   </td>
                   <td>
-                    {/* Size Selector */}
-                    <select
-                      value={item.prodSize}
-                      onChange={e => handleSizeChange(index, e.target.value)}
-                      className='p-2 border rounded'
-                    >
-                      {item.availableSizes?.map((size, i) => (
-                        <option key={i} value={size}>
-                          {size}
-                        </option>
-                      ))}
-                    </select>
                     <br />
-                    {/* Color Selector */}
-                    <select
-                      value={item.prodColor}
-                      onChange={e => handleColorChange(index, e.target.value)}
-                      className='p-2 border rounded mt-2'
-                    >
-                      {item.availableColors?.map((color, i) => (
-                        <option key={i} value={color}>
-                          {color}
-                        </option>
-                      ))}
-                    </select>
+                    <div className='text-[15px]'>{item.variant}</div>
                   </td>
-                  <td>${item.prodPrice}</td>
                   <td>
                     {/* Quantity Picker */}
                     <input
                       type='number'
-                      value={item.prodQuantity}
+                      value={item.quantity}
                       min='1'
                       className='w-[50px] p-2 border rounded'
-                      onChange={e =>
-                        handleQuantityChange(index, parseInt(e.target.value))
-                      }
+                      onChange={(e) => {
+                        const newQuantity = parseInt(e.target.value, 10)
+                        if (newQuantity >= 1) {
+                          handleQuantityChange(item.product._id, item.variant, newQuantity)
+                        }
+                      }}
                     />
                   </td>
+                  <td>${item.price.toFixed(2)}</td>
                   <td>
-                    <button className='text-red-500'>Remove</button>
+                    <button className='text-red-500 hover:text-red-700' onClick={() => handleDelete(item.product._id, item.variant)}>
+                      <DeleteOutlineOutlined sx={{ fontSize: '30px' }} />
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -183,18 +229,18 @@ const Cart = () => {
               <div>
                 <p className='flex justify-between items-center'>
                   <span>Total Products Value:</span>{' '}
-                  <span>${calculateTotalPrice()}</span>
+                  <span>${calculateTotalPrice().toFixed(2)}</span>
                 </p>
               </div>
               <div>
                 <p className='flex justify-between items-center'>
                   <span>Discount:</span>{' '}
-                  <span className='text-red-500'>-2$</span>
+                  <span className='text-red-500'>-${discount.toFixed(2)}</span>
                 </p>
               </div>
               <div>
                 <p className='flex justify-between items-center'>
-                  <span>Shipping:</span> <span>2$</span>
+                  <span>Shipping:</span> <span>$ {shippingFee}</span>
                 </p>
               </div>
             </div>
@@ -204,17 +250,71 @@ const Cart = () => {
                   <strong>Total:</strong>
                 </span>{' '}
                 <span>
-                  <strong>${calculateTotalPrice() - 2 + 2}</strong>
+                  <strong>${finalTotal.toFixed(2)}</strong>
                 </span>
               </p>
             </div>
 
             <button className='p-3 mt-2 rounded-sm hover:bg-white hover:text-black border-2 text-[15px] transition-all duration-200 font-semibold border-black bg-black text-white'>
-              {cartItems?.length > 0 ? `CHECK OUT (${cartItems?.length})` : 'CHECK OUT'}
+              {cartItems.length > 0 ? `CHECK OUT (${cartItems.length})` : 'CHECK OUT'}
+            </button>
+
+            {/* Apply Coupon Button */}
+            <button
+              className='p-2 mt-4 rounded-sm hover:bg-gray-200 border-2 text-[15px] transition-all duration-200 font-semibold border-gray-400 bg-gray-100 text-black'
+              onClick={handleApplyCoupon}
+            >
+              APPLY COUPON
             </button>
           </div>
         </div>
       )}
+
+      {/* Coupon Modal */}
+      <Modal
+        open={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        aria-labelledby="apply-coupon-modal-title"
+        aria-describedby="apply-coupon-modal-description"
+      >
+        <Box
+          sx={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: 400,
+            bgcolor: 'background.paper',
+            border: '2px solid #000',
+            boxShadow: 24,
+            p: 4,
+          }}
+        >
+          <Typography id="apply-coupon-modal-title" variant="h6" component="h2">
+            Select a Coupon
+          </Typography>
+          <RadioGroup
+            aria-labelledby="coupon-radio-group"
+            name="coupon-radio-group"
+            value={selectedCoupon}
+            onChange={(e) => setSelectedCoupon(e.target.value)}
+          >
+            {coupons.map((coupon) => (
+              <FormControlLabel
+                key={coupon._id}
+                value={coupon._id}
+                control={<Radio />}
+                label={`${coupon.code} - ${coupon.discountPercentage}% off`}
+              />
+            ))}
+          </RadioGroup>
+          <Box mt={2} display="flex" justifyContent="flex-end">
+            <Button variant="contained" color="primary" onClick={confirmApplyCoupon}>
+              Apply
+            </Button>
+          </Box>
+        </Box>
+      </Modal>
     </div>
   )
 }

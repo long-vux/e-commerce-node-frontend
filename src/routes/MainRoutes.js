@@ -10,6 +10,7 @@ import LoginSignup from '../pages/LoginSignup';
 import ChangePassword from '../pages/ChangePassword'
 import RecoverPassword from '../pages/RecoverPassword'
 import Shopping from '../pages/Shopping';
+import ProductDetail from '../pages/ProductDetail';
 
 const MainRoutes = () => (
   <>
@@ -19,6 +20,7 @@ const MainRoutes = () => (
       <Route path="/recover-password" element={<RecoverPassword />} />
       <Route path="/recover-password/:userId/:token" element={<RecoverPassword />} />
       <Route path="/profile" element={<Profile />} />
+      <Route path="/product/:productId" element={<ProductDetail />} />
       <Route path="/cart" element={<Cart/>} />
       <Route path="/category/:category" element={<Shopping/>} />
       <Route path="/:userId/verify/:token" element={<VerifyEmail />} />

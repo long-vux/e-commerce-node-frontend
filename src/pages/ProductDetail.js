@@ -1,68 +1,74 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import ProductList from '../components/Products/ProductList';
+import useAxios from '../utils/axiosInstance';
+import { useParams } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
-
-const products = [
-  {
-    "id": 1,
-    "name": "Wireless Headphones",
-    "price": 99.99,
-    "image": "http://localhost:3000/static/media/item5-1.506f4605917d1b5ddddf.png",
-    "description": "High-quality wireless headphones with noise cancellation."
-  },
-  {
-    "id": 2,
-    "name": "Smart Watch",
-    "price": 199.99,
-    "image": "http://localhost:3000/static/media/item5-1.506f4605917d1b5ddddf.png",
-    "description": "Stay connected on the go with this sleek smart watch."
-  },
-  {
-    "id": 3,
-    "name": "Bluetooth Speaker",
-    "price": 49.99,
-    "image": "http://localhost:3000/static/media/item5-1.506f4605917d1b5ddddf.png",
-    "description": "Portable Bluetooth speaker with excellent sound quality."
-  },
-  {
-    "id": 4,
-    "name": "Gaming Mouse",
-    "price": 29.99,
-    "image": "http://localhost:3000/static/media/item5-1.506f4605917d1b5ddddf.png",
-    "description": "Ergonomic gaming mouse with customizable buttons."
-  },
-  {
-    "id": 5,
-    "name": "4K Monitor",
-    "price": 299.99,
-    "image": "http://localhost:3000/static/media/item5-1.506f4605917d1b5ddddf.png",
-    "description": "Ultra HD 4K monitor for crisp and clear visuals."
-  },
-  {
-    "id": 6,
-    "name": "Mechanical Keyboard",
-    "price": 89.99,
-    "image": "http://localhost:3000/static/media/item5-1.506f4605917d1b5ddddf.png",
-    "description": "Responsive mechanical keyboard with RGB lighting."
-  }
-]
 const ProductDetail = () => {
+  const axios = useAxios();
+  const { productId } = useParams();
+  const [product, setProduct] = useState(null);
+  const [productByCategory, setProductByCategory] = useState([]);
+  const [variants, setVariants] = useState([]);
+  const [selectedVariant, setSelectedVariant] = useState(null);
+  const [quantity, setQuantity] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    setIsLoading(true);
+    axios.get(`${process.env.REACT_APP_API_URL}api/product/${productId}`)
+      .then(res => {
+        setProduct(res.data.data.product)
+        setVariants(res.data.data.product.variants)
+      })
+      .catch(err => console.log(err))
+      .finally(() => setIsLoading(false))
+  }, [productId])
+
+  useEffect(() => {
+    setIsLoading(true);
+    axios.get(`${process.env.REACT_APP_API_URL}api/product/category/${product?.category}`)
+      .then(res => {
+        // exclude the current product
+        const products = res.data.data.filter(product => product._id !== productId);
+        setProductByCategory(products)
+      })
+      .catch(err => console.log(err))
+      .finally(() => setIsLoading(false))
+  }, [product?.category])
 
   const handleAddToCart = (id) => {
-    console.log(`Added product with id ${id} to cart`);
+    setIsLoading(true);
+    if (!selectedVariant) {
+      toast.error('Please select a variant');
+      return;
+    }
+
+    axios.post(`${process.env.REACT_APP_API_URL}api/cart/add-to-cart`, {
+      productId: id,
+      quantity: quantity,
+      variant: selectedVariant
+    })
+      .then(res => {
+        toast.success('Product added to cart');
+      })
+      .catch(err => {
+        toast.error('Error adding product to cart');
+      })
+      .finally(() => setIsLoading(false))
   };
 
   return (
     <div className="md:p-20 p-4">
       <nav className="text-sm text-gray-500 mb-4">
-        <a href="/" className="hover:underline">Men</a> /
-        <a href="/" className="hover:underline">Nano Melange Fabric Men's Straight-Leg Pants Keeps Form Less Wrinkles</a>
+        <a href={`/category/${product?.category}`} className="hover:underline">{product?.category}</a> /
+        <a href={`/product/${product?._id}`} className="hover:underline"> {product?.name}</a>
       </nav>
       <div className="flex flex-col md:flex-row">
         <div className="md:w-1/2">
           <div className="relative">
-            <img src="https://placehold.co/300x300" alt="product" className="w-full" />
-            <div className="absolute top-0 left-0 bg-red-500 text-white text-xs px-2 py-1">50%</div>
+            <img src={product?.image} alt={product?.name} className="w-full" />
           </div>
           <div className="flex mt-2 space-x-2">
             <img src="https://placehold.co/60x60" alt="Thumbnail 1" className="w-20 h-20 border" />
@@ -73,33 +79,40 @@ const ProductDetail = () => {
           </div>
         </div>
         <div className="md:w-1/2 md:pl-8">
-          <h1 className="text-xl font-bold">Nano Melange Fabric Men's Straight-Leg Pants Keeps Form Less Wrinkles</h1>
+          <h1 className="text-xl font-bold">{product?.name}</h1>
           <div className="flex items-center mt-2">
             <span className="text-yellow-500"><i className="fas fa-star"></i></span>
             <span className="text-yellow-500"><i className="fas fa-star"></i></span>
             <span className="text-yellow-500"><i className="fas fa-star"></i></span>
             <span className="text-yellow-500"><i className="fas fa-star"></i></span>
             <span className="text-yellow-500"><i className="fas fa-star"></i></span>
-            <span className="text-gray-500 ml-2">(2)</span>
+            <span className="text-gray-500 ml-2">(3)</span> {/* set later */}
+            <div className="border-r h-4 w-1 mx-2 text-gray-500"></div>
+            <span className="text-gray-500">2.4k Ratings</span>
+            <div className="border-r h-3 w-1 mx-2 text-gray-500"></div>
+            <span className="text-gray-500">{product?.totalSold} Sold</span>
           </div>
-          <div className="text-2xl font-bold mt-2">20.00$ <span className="text-red-500 line-through">40.00$</span></div>
+          <div className="text-2xl font-bold mt-2">{product?.price}$ <span className="text-red-500 line-through">{product?.price * 2}$</span></div>
           <div className="mt-4">
-            <span className="font-bold">SIZE</span>
-            <div className="flex mt-2">
-              <button className="border px-4 py-2 mr-2">XL</button>
+            <span className="font-bold">VARIANTS</span>
+            <div className="flex flex-col mt-2">
+              {variants.map((variant, index) => (
+                <div className="flex flex-row justify-start gap-2 items-center" key={index}>
+                  <button className={`border h-10 w-[100px] hover:bg-gray-100 ${selectedVariant === variant.name ? 'bg-gray-200' : ''}`} onClick={() => setSelectedVariant(variant.name)}>{variant.name}</button>
+                  <p className="text-sm text-gray-500">{variant.stock} in stock</p>
+                </div>
+              ))}
             </div>
           </div>
           <div className="mt-4">
             <span className="font-bold">QUANTITY</span>
-            <div className="flex mt-2 items-center">
-              <button className="border px-4 py-2">-</button>
-              <span className="px-4">1</span>
-              <button className="border px-4 py-2">+</button>
+            <div className="flex flex-row justify-start gap-2 items-center">
+              <input type="number" className="border h-10 w-10 text-center" value={quantity} onChange={(e) => setQuantity(e.target.value)} />
             </div>
           </div>
-          <div className="mt-4">
-            <button className="bg-black text-white px-4 py-2 w-full mb-2">Add to Cart</button>
-            <button className="border px-4 py-2 w-full">Buy Now</button>
+          <div className="mt-4 flex flex-col gap-2">
+            <button className="bg-black text-white px-4 py-2 w-full hover:bg-gray-800" onClick={() => handleAddToCart(product?._id)}>Add to Cart</button>
+            <button className="border px-4 py-2 w-full hover:bg-gray-100">Buy Now</button>
           </div>
           <div className="mt-4">
             <h2 className="font-bold">DESCRIPTION</h2>
@@ -153,9 +166,9 @@ const ProductDetail = () => {
       <div className="mt-8">
         <h2 className="font-bold text-lg">YOU MAY ALSO LIKE</h2>
         <div className="flex mt-4 space-x-4 overflow-x-auto">
-          <ProductList products={products} handleAddToCart={handleAddToCart} />
+          <ProductList products={productByCategory} handleAddToCart={handleAddToCart} />
         </div>
-      </div>  
+      </div>
     </div>
   );
 };
