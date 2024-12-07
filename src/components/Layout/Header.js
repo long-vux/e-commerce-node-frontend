@@ -20,7 +20,7 @@ const categories = {
     {
       title: 'Pant',
       items: ['Polo', 't-shirt', 'Polo', 't-shirt', 'Polo', 't-shirt']
-    }
+    } 
   ],
   women: [
     { title: 'Dresses', items: ['Maxi', 'Midi', 'Mini', 'Casual', 'Formal'] },
@@ -166,7 +166,29 @@ const Header = () => {
                   >
                     {category.toUpperCase()}
                   </Link>
-                
+                  {activeCategory === category && (
+                    <div className='absolute w-[1000px] bg-white shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-50 transition-all duration-300'>
+                      <div className='flex justify-around items-center p-4 w-full'>
+                        {categories[activeCategory]?.map(categoryGroup => (
+                          <div key={categoryGroup.title} className='p-4'>
+                            <h3 className='font-bold'>{categoryGroup.title}</h3>
+                            <ul>
+                              {categoryGroup.items?.map((item, index) => (
+                                <li key={index}>{item}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        ))}
+                        <div>
+                          <img
+                            src={vingtageboy2}
+                            alt='Category'
+                            className='w-48 h-32 object-cover'
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </li>
               ))}
             </ul>

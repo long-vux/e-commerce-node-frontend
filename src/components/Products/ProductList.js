@@ -31,7 +31,7 @@ function ProductList ({ products = [] }) {
       <div className='grid grid-cols-2 md:grid-cols-4 gap-4'>
         {currentProducts.length > 0 ? (
           currentProducts.map((product, index) => (
-            <ProductCard key={product.id || index} product={product} />
+            <ProductCard key={product._id || index} product={product} />
           ))
         ) : (
           <p className='col-span-4 text-center text-gray-500'>

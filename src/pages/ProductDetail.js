@@ -1,36 +1,57 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import ProductList from '../components/Products/ProductList';
+import useAxios from '../utils/axiosInstance';
 import { useParams } from 'react-router-dom';
-import ProductsAPI from '../api/ProductsAPI';
-
-const products = [
-  // ... your product data
-];
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const ProductDetail = () => {
-  const { id } = useParams(); // Get the product ID from the URL
+  const axios = useAxios();
+  const { productId } = useParams();
   const [product, setProduct] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [productByCategory, setProductByCategory] = useState([]);
+  const [variants, setVariants] = useState([]);
+  const [selectedVariant, setSelectedVariant] = useState(null);
+  const [quantity, setQuantity] = useState(1);
   const [error, setError] = useState(null);
-  const [quantity, setQuantity] = useState(1); // State for quantity
+
 
   useEffect(() => {
-    const fetchProduct = async () => {
-      try {
-        const fetchedProduct = await ProductsAPI.getProductById(id);
-        setProduct(fetchedProduct.data.product);
-      } catch (err) {
-        setError(err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
+    axios.get(`${process.env.REACT_APP_API_URL}api/product/${productId}`)
+      .then(res => {
+        setProduct(res.data.data.product)
+        setVariants(res.data.data.product.variants)
+      })
+      .catch(err => console.log(err))
+  }, [productId])
 
-    fetchProduct();
-  }, [id]); // Fetch product when the component mounts or when the ID changes
+  useEffect(() => {
+    axios.get(`${process.env.REACT_APP_API_URL}api/product/category/${product?.category}`)
+      .then(res => {
+        // exclude the current product
+        const products = res.data.data.filter(product => product._id !== productId);
+        setProductByCategory(products)
+      })
+      .catch(err => console.log(err))
+  }, [product?.category])
 
   const handleAddToCart = (id) => {
-    console.log(`Added product with id ${id} to cart, quantity: ${quantity}`);
+    if (!selectedVariant) {
+      toast.error('Please select a variant');
+      return;
+    }
+
+    axios.post(`${process.env.REACT_APP_API_URL}api/cart/add-to-cart`, {
+      productId: id,
+      quantity: quantity,
+      variant: selectedVariant
+    })
+      .then(res => {
+        toast.success('Product added to cart');
+      })
+      .catch(err => {
+        toast.error('Error adding product to cart');
+      })
   };
 
   const increaseQuantity = () => {
@@ -41,10 +62,6 @@ const ProductDetail = () => {
     setQuantity((prevQuantity) => (prevQuantity > 1 ? prevQuantity - 1 : 1));
   };
 
-  if (loading) {
-    return <div>Loading...</div>; // Show loading state
-  }
-
   if (error) {
     return <div>Error: {error}</div>; // Show error message
   }
@@ -54,50 +71,44 @@ const ProductDetail = () => {
   }
 
   return (
-    <div className='md:p-20 p-4'>
-      <nav className='text-sm text-gray-500 mb-4'>
-        <a href='/' className='hover:underline'>
-          Men
-        </a>{' '}
-        /
-        <a href='/' className='hover:underline'>
-          {product.name}
-        </a>
+    <div className="md:p-20 p-4">
+      <nav className="text-sm text-gray-500 mb-4">
+        <a href={`/category/${product?.category}`} className="hover:underline">{product?.category}</a> /
+        <a href={`/product/${product?._id}`} className="hover:underline"> {product?.name}</a>
       </nav>
-      <div className='flex flex-col md:flex-row'>
-        <div className='md:w-1/2'>
-          <div className='relative'>
-            <img src={product.image} alt='product' className='w-full' />
-            <div className='absolute top-0 left-0 bg-red-500 text-white text-xs px-2 py-1'>
-              50%
-            </div>
+      <div className="flex flex-col md:flex-row">
+        <div className="md:w-1/2">
+          <div className="relative">
+            <img src={product?.image} alt={product?.name} className="w-full" />
+          </div>
+          <div className="flex mt-2 space-x-2">
+            <img src="https://placehold.co/60x60" alt="Thumbnail 1" className="w-20 h-20 border" />
+            <img src="https://placehold.co/60x60" alt="Thumbnail 2" className="w-20 h-20 border" />
+            <img src="https://placehold.co/60x60" alt="Thumbnail 3" className="w-20 h-20 border" />
+            <img src="https://placehold.co/60x60" alt="Thumbnail 4" className="w-20 h-20 border" />
+            <img src="https://placehold.co/60x60" alt="Thumbnail 5" className="w-20 h-20 border" />
           </div>
         </div>
-        <div className='md:w-1/2 md:pl-8'>
-          <h1 className='text-xl font-bold'>{product.name}</h1>
-          <div className='flex items-center mt-2'>
-            <span className='text-yellow-500'>
-              <i className='fas fa-star'></i>
-            </span>
-            <span className='text-yellow-500'>
-              <i className='fas fa-star'></i>
-            </span>
-            <span className='text-yellow-500'>
-              <i className='fas fa-star'></i>
-            </span>
-            <span className='text-yellow-500'>
-              <i className='fas fa-star'></i>
-            </span>
-            <span className='text-yellow-500'>
-              <i className='fas fa-star'></i>
-            </span>
-            <span className='text-gray-500 ml-2'>(2)</span>
+        <div className="md:w-1/2 md:pl-8">
+          <h1 className="text-xl font-bold">{product?.name}</h1>
+          <div className="flex items-center mt-2">
+            <span className="text-yellow-500"><i className="fas fa-star"></i></span>
+            <span className="text-yellow-500"><i className="fas fa-star"></i></span>
+            <span className="text-yellow-500"><i className="fas fa-star"></i></span>
+            <span className="text-yellow-500"><i className="fas fa-star"></i></span>
+            <span className="text-yellow-500"><i className="fas fa-star"></i></span>
+            <span className="text-gray-500 ml-2">(3)</span> {/* set later */}
+            <div className="border-r h-4 w-1 mx-2 text-gray-500"></div>
+            <span className="text-gray-500">2.4k Ratings</span>
+            <div className="border-r h-3 w-1 mx-2 text-gray-500"></div>
+            <span className="text-gray-500">{product?.totalSold} Sold</span>
           </div>
-          <div className='text-2xl font-bold mt-2'>{product.price}$ </div>
+          <div className="text-2xl font-bold mt-2">{product?.price}$ <span className="text-red-500 line-through">{product?.price * 2}$</span></div>
+
           <div className='mt-4'>
             <span className='font-bold'>SIZE - COLOR</span>
             <div className='flex mt-2'>
-              <select className='border px-4 py-2 mr-2'>
+              <select className='border px-4 py-2 mr-2' onChange={(e) => setSelectedVariant(e.target.value)}>
                 {Array.isArray(product.variants) && product.variants.length > 0 ? (
                   product.variants.map((variant) => (
                     <option key={variant._id} value={variant.name}>
@@ -111,7 +122,7 @@ const ProductDetail = () => {
             </div>
           </div>
           <div className='mt-4'>
-     
+
             <span className='font-bold'>QUANTITY</span>
             <div className='flex mt-2 items-center'>
               <button className='border px-4 py-2' onClick={decreaseQuantity}>-</button>
@@ -119,16 +130,14 @@ const ProductDetail = () => {
               <button className='border px-4 py-2' onClick={increaseQuantity}>+</button>
             </div>
           </div>
-          <div className='mt-4'>
-            <button className='bg-black text-white px-4 py-2 w-full mb-2' onClick={() => handleAddToCart(product.id)}>
-              Add to Cart
-            </button>
-            <button className='border px-4 py-2 w-full'>Buy Now</button>
+          <div className="mt-4 flex flex-col gap-2">
+            <button className="bg-black text-white px-4 py-2 w-full hover:bg-gray-800" onClick={() => handleAddToCart(product?._id)}>Add to Cart</button>
+            <button className="border px-4 py-2 w-full hover:bg-gray-100">Buy Now</button>
           </div>
           <div className='mt-4'>
             <h2 className='font-bold'>DESCRIPTION</h2>
             <p className='mt-2'>{product.description}</p>
-          
+
           </div>
         </div>
       </div>
@@ -187,10 +196,10 @@ const ProductDetail = () => {
           </div>
         </div>
       </div>
-      <div className='mt-8'>
-        <h2 className='font-bold text-lg'>YOU MAY ALSO LIKE</h2>
-        <div className='flex mt-4 space-x-4 overflow-x-auto'>
-          <ProductList products={products} handleAddToCart={handleAddToCart} />
+      <div className="mt-8">
+        <h2 className="font-bold text-lg">YOU MAY ALSO LIKE</h2>
+        <div className="flex mt-4 space-x-4 overflow-x-auto">
+          <ProductList products={productByCategory} handleAddToCart={handleAddToCart} />
         </div>
       </div>
     </div>
