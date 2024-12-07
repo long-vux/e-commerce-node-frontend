@@ -213,12 +213,12 @@ const Home = () => {
           </h1>
           <ProductList products={products} handleAddToCart={handleAddToCart} />
 
-          <button className='w-[180px] h-[50px] border border-2 border-black my-20 hover:scale-110 hover:bg-black  transition-all duration-300 '>
+          <a className='w-[180px] h-[50px] border border-2 border-black my-20 hover:scale-110 hover:bg-black  transition-all duration-300 ' href="/collection/best-seller">
             <span className='text-center text-black font-semibold text-[24px] italic p-8 hover:text-white'>
               {' '}
               Shop now
             </span>
-          </button>
+          </a>
         </div>
       </div>
     </div>

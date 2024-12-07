@@ -55,14 +55,12 @@ const Product = () => {
     <div>
       <div className='w-full mb-2 flex justify-between'>
         <span className=' text-[30px] font-semibold  '>Product</span>
-        <Button
-          variant='contained'
-          color='default'
+        <button
+          className='bg-black text-white border hover:bg-white hover:text-black transition-all duration-300 rounded-md py-1 px-3 mr-3 '
           onClick={() => setOpen(true)}
-          sx={{ marginBottom: 2 }}
         >
           Add Product
-        </Button>
+        </button>
         <AddProduct
           open={open}
           onClose={() => setOpen(false)}

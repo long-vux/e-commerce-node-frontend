@@ -10,7 +10,7 @@ import axios from 'axios'
 import { getSessionId, getUserId } from '../../utils/session'
 
 function ProductCard ({ product }) {
-  const { _id, name, price, image, categories } = product
+  const { _id, name, price, image, category } = product
   const [isAdded, setIsAdded] = useState(false)
   const [isFavorite, setIsFavorite] = useState(true)
 
@@ -58,7 +58,7 @@ function ProductCard ({ product }) {
 
   return (
     <div className='relative p-4 rounded-2xl bg-white  shadow-lg hover:scale-105 transition-all duration-300 '>
-      <a href={`/collection/${categories}/products/${_id}/${name.replace(/\s+/g, '-').toLowerCase()}`} >
+      <a href={`/collection/${category}/products/${_id}/${name.replace(/\s+/g, '-').toLowerCase()}`} >
         <img src={image} alt={name} className=' object-cover rounded-t-2xl' />
       </a>
       <div className='flex flex-row justify-end items-center gap-2 m-2 '>

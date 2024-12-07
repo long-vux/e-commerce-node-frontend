@@ -160,35 +160,13 @@ const Header = () => {
               {Object.keys(categories)?.map(category => (
                 <li key={category} className='relative group'>
                   <Link
-                    to={`/shopping/${category}`}
+                    to={`/collection/${category}`}
                     onMouseOver={() => handleNavMouseOver(category)}
                     className='hover:text-blue-500 focus:outline-none'
                   >
                     {category.toUpperCase()}
                   </Link>
-                  {activeCategory === category && (
-                    <div className='absolute w-[1000px] bg-white shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-50 transition-all duration-300'>
-                      <div className='flex justify-around items-center p-4 w-full'>
-                        {categories[activeCategory]?.map(categoryGroup => (
-                          <div key={categoryGroup.title} className='p-4'>
-                            <h3 className='font-bold'>{categoryGroup.title}</h3>
-                            <ul>
-                              {categoryGroup.items?.map((item, index) => (
-                                <li key={index}>{item}</li>
-                              ))}
-                            </ul>
-                          </div>
-                        ))}
-                        <div>
-                          <img
-                            src={vingtageboy2}
-                            alt='Category'
-                            className='w-48 h-32 object-cover'
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  )}
+                
                 </li>
               ))}
             </ul>

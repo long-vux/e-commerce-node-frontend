@@ -100,8 +100,8 @@ const ProductDetail = () => {
               <select className='border px-4 py-2 mr-2'>
                 {Array.isArray(product.variants) && product.variants.length > 0 ? (
                   product.variants.map((variant) => (
-                    <option key={variant._id} value={variant.size}>
-                      {variant.size} - {variant.color} ({variant.stock} in stock)
+                    <option key={variant._id} value={variant.name}>
+                      {variant.name} ({variant.stock} in stock)
                     </option>
                   ))
                 ) : (

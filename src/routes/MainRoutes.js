@@ -12,7 +12,7 @@ import Shopping from '../pages/Shopping'
 import ProductDetail from '../pages/ProductDetail'
 import Checkout from '../pages/Checkout'
 const MainRoutes = () => (
-  <>
+  <div className='overflow-x-hidden'>
     <Header />
     <Routes>
       <Route path='/' element={<Home />} />
@@ -34,7 +34,7 @@ const MainRoutes = () => (
       {/* <Route path="*" element={<ErrorPage />} /> */}
     </Routes>
     <Footer />
-  </>
+  </div>
 )
 
 export default MainRoutes
