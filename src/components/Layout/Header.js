@@ -15,6 +15,7 @@ import {
 } from '@mui/icons-material'
 import CloseIcon from '@mui/icons-material/Close'
 import { Link, useNavigate } from 'react-router-dom'
+import Search_product from './Search_product'
 
 const Header = () => {
   const apiUrl = process.env.REACT_APP_API_URL;
@@ -120,7 +121,7 @@ const Header = () => {
               {categories?.map(category => (
                 <li key={category} className='relative group'>
                   <Link
-                    to={`/${category}`}
+                    to={`category/${category}`}
                     className='hover:text-blue-500 focus:outline-none'
                   >
                     {category.toUpperCase()}
@@ -198,16 +199,7 @@ const Header = () => {
         </div>
       ) : (
         <div className='p-4 py-8 transition-all duration-300'>
-          <div className='relative w-full flex justify-center  '>
-            <div className='flex justify-between items-center w-fit border px-5 rounded-full'>
-              <Search className='text-gray-500' />
-              <input
-                type='text'
-                placeholder='Search product ...'
-                className='w-full  p-2 border-none focus:outline-none border border-red'
-              />
-            </div>
-          </div>
+          <Search_product/>
           <button
             onClick={handleSearchClose}
             className='absolute p-2 top-[10%] right-[1%] font-bold text-2xl'

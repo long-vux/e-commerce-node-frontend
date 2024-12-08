@@ -13,7 +13,7 @@ import Collapse from '@mui/material/Collapse'
 import ExpandLess from '@mui/icons-material/ExpandLess'
 import ExpandMore from '@mui/icons-material/ExpandMore'
 import Checkbox from '@mui/material/Checkbox'
-import CircularProgress from '@mui/material/CircularProgress';
+import CircularProgress from '@mui/material/CircularProgress'
 
 const Shopping = () => {
   const { category } = useParams()
@@ -48,10 +48,15 @@ const Shopping = () => {
 
     fetchProducts()
   }, [])
-  const parseVariantDetails = (name) => {
-    const [size, color] = name.split(' - ');
-    return { size, color };
-  };
+  const parseVariantDetails = name => {
+    // Ensure 'name' is a string and contains ' - '
+    if (typeof name !== 'string' || !name.includes(' - ')) {
+      return { size: undefined, color: undefined } // Return default values if invalid
+    }
+
+    const [size, color] = name.split(' - ')
+    return { size, color }
+  }
 
   // Extract unique tags from products
   const uniqueTags = Array.from(
@@ -64,7 +69,7 @@ const Shopping = () => {
       products.flatMap(
         product =>
           product.variants?.map(
-            variant => parseVariantDetails(variant.name).size
+            variant => parseVariantDetails(variant.name).size || ''
           ) || []
       )
     )
@@ -75,13 +80,11 @@ const Shopping = () => {
       products.flatMap(
         product =>
           product.variants?.map(
-            variant => parseVariantDetails(variant.name).color
+            variant => parseVariantDetails(variant.name).color || ''
           ) || []
       )
     )
   )
-
-
 
   // Define filters based on unique values
   const filters = [
@@ -110,7 +113,13 @@ const Shopping = () => {
     setSelectedFilters(new Array(filters.length).fill([])) // Initialize with empty arrays
   }, [filters.length])
 
-  if (loading) return <div className='w-full h-full flex justify-center items-center'> <CircularProgress/> </div>
+  if (loading)
+    return (
+      <div className='w-full h-full flex justify-center items-center'>
+        {' '}
+        <CircularProgress />{' '}
+      </div>
+    )
   if (error) return <p>Error: {error}</p>
 
   const handleAddToCart = id => {
@@ -145,7 +154,7 @@ const Shopping = () => {
         selectedFilters[2].length === 0 ||
         selectedFilters[2].some(selected =>
           product.variants?.some(variant => {
-            const { color } = parseVariantDetails(variant.name)
+            const { color } = parseVariantDetails(variant.name) || ''
             return color === selected
           })
         )
@@ -154,7 +163,7 @@ const Shopping = () => {
         selectedFilters[3].length === 0 ||
         selectedFilters[3].some(selected =>
           product.variants?.some(variant => {
-            const { size } = parseVariantDetails(variant.name)
+            const { size } = parseVariantDetails(variant.name) || ''
             return size === selected
           })
         )
@@ -187,7 +196,6 @@ const Shopping = () => {
     }
   }
 
-  
   return (
     <div className='relative'>
       <div className='relative'>
