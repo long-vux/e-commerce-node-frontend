@@ -6,7 +6,7 @@ import Profile from '../pages/Profile'
 import VerifyEmail from '../pages/VerifyEmail'
 import Cart from '../pages/Cart'
 import LoginSignup from '../pages/LoginSignup'
-// import ErrorPage from '../pages/ErrorPage';
+import ErrorPage from '../pages/ErrorPage.jsx';
 import ChangePassword from '../pages/ChangePassword'
 import RecoverPassword from '../pages/RecoverPassword'
 import OrderDetails from '../pages/OrderDetail'
@@ -31,9 +31,9 @@ const MainRoutes = () => (
       <Route path='/history-purchase' element={<HistoryPurchase />} />
       <Route path='/order-details/:orderId' element={<OrderDetails />} />
 
-      {/* Add a fallback route for unknown paths */}
-      {/* <Route path="*" element={<ErrorPage />} /> */}
       <Route path='/' element={<Home />} />
+      {/* Add a fallback route for unknown paths */}
+      <Route path="*" element={<ErrorPage />} />
     </Routes>
     <Footer />
   </div>
