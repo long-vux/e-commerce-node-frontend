@@ -9,7 +9,7 @@ import LoginSignup from '../pages/LoginSignup'
 // import ErrorPage from '../pages/ErrorPage';
 import ChangePassword from '../pages/ChangePassword'
 import RecoverPassword from '../pages/RecoverPassword'
-
+import OrderDetails from '../pages/OrderDetail'
 import Shopping from '../pages/Shopping'
 import ProductDetail from '../pages/ProductDetail'
 import Checkout from '../pages/Checkout'
@@ -29,6 +29,8 @@ const MainRoutes = () => (
       <Route path='cart/checkout' element={<Checkout />} />
       <Route path='/verify-email/:userId/:token' element={<VerifyEmail />} />
       <Route path='/history-purchase' element={<HistoryPurchase />} />
+      <Route path='/order-details/:orderId' element={<OrderDetails />} />
+
       {/* Add a fallback route for unknown paths */}
       {/* <Route path="*" element={<ErrorPage />} /> */}
       <Route path='/' element={<Home />} />

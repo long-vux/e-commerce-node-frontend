@@ -35,6 +35,10 @@ const HistoryPurchase = () => {
     navigate('/')
   }
 
+  const viewOrderDetails = (orderId) => {
+    navigate(`/order-details/${orderId}`)
+  }
+
   return (
     <div className='md:p-20 pt-8 mx-auto w-5/6'>
       <h1 className='text-3xl font-bold mb-4'>My Purchase</h1>
@@ -84,7 +88,7 @@ const HistoryPurchase = () => {
                 </thead>
                 <tbody>
                   {orders.map(order => (
-                    <tr key={order._id} className='border'>
+                    <tr key={order._id} className='border' onClick={() => viewOrderDetails(order._id)} style={{ cursor: 'pointer' }}>
                       <td className='border p-2'>
                         <img
                           src={order.items[0].product.image}
