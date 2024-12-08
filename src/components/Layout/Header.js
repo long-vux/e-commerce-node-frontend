@@ -1,4 +1,10 @@
-import React, { useState, useRef, useEffect, useCallback, useContext } from 'react'
+import React, {
+  useState,
+  useRef,
+  useEffect,
+  useCallback,
+  useContext
+} from 'react'
 import useAxios from '../../utils/axiosInstance'
 import { UserContext } from '../../contexts/UserContext'
 import logo from '../../assets/images/logo.png'
@@ -176,9 +182,9 @@ const Header = () => {
                     ))}
                     <div className='flex justify-between items-center pt-10'>
                       <div className='text-gray-500'>
-                        {
-                          remainingItemsCount > 0 ? `${remainingItemsCount} More Items In Cart` : 'More Details In Cart'
-                        }
+                        {remainingItemsCount > 0
+                          ? `${remainingItemsCount} More Items In Cart`
+                          : 'More Details In Cart'}
                       </div>
                       <Link to='/cart' className='bg-black text-white p-2 rounded-md' onClick={console.log('clicked')}>
                         View Cart
