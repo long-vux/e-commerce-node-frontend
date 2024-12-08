@@ -44,25 +44,40 @@ const ProductDetail = () => {
       .catch(err => console.log(err))
   }, [product?.category])
 
-  const handleAddToCart = id => {
+  const handleAddToCart = async id => {
     if (!selectedVariant) {
       toast.error('Please select a variant')
       return
     }
 
-    axios
-      .post(`${process.env.REACT_APP_API_URL}api/cart/add-to-cart`, {
-        productId: id,
-        quantity: quantity,
-        variant: selectedVariant
-      })
-      .then(res => {
-        toast.success('Product added to cart')
-        window.location.reload()
-      })
-      .catch(err => {
+    try {
+      console.log('Selected Variant:', selectedVariant)
+      console.log('Quantity:', quantity)
+
+      const response = await axios.post(
+        `${process.env.REACT_APP_API_URL}api/cart/add-to-cart`,
+        {
+          productId: id,
+          quantity,
+          variant: selectedVariant
+        }
+      )
+
+      toast.success('Product added to cart')
+      console.log('Updated Cart:', response.data.cart)
+
+      // Update the cart state dynamically (if you're using Redux, Context API, etc.)
+      // Example (using React state):
+      // setCart(response.data.cart);
+    } catch (error) {
+      console.error('Error adding product to cart:', error)
+
+      if (error.response && error.response.data.message) {
+        toast.error(error.response.data.message) // Display error from backend
+      } else {
         toast.error('Error adding product to cart')
-      })
+      }
+    }
   }
 
   const increaseQuantity = () => {
@@ -100,7 +115,7 @@ const ProductDetail = () => {
       </nav>
       <div className='flex flex-col md:flex-row'>
         <div className='md:w-1/2'>
-          <div className='relative w-full h-[40rem] border' >
+          <div className='relative w-full h-[40rem] border'>
             {' '}
             {/* Set a fixed height for the preview image */}
             <img

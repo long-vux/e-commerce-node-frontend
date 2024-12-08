@@ -1,5 +1,8 @@
 import React, { useState, useEffect, useContext } from 'react'
-import { ShoppingCartOutlined, DeleteOutlineOutlined } from '@mui/icons-material'
+import {
+  ShoppingCartOutlined,
+  DeleteOutlineOutlined
+} from '@mui/icons-material'
 import Checkbox from '@mui/material/Checkbox'
 import emptyCart2 from '../assets/utilities/emptyCart.png'
 import useAxios from '../utils/axiosInstance'
@@ -7,8 +10,15 @@ import { UserContext } from '../contexts/UserContext'
 import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { useNavigate } from 'react-router-dom'
-import { Modal, Box, Typography, Button, Radio, RadioGroup, FormControlLabel } from '@mui/material'
-import img4 from '../assets/images/item5-1.png'
+import {
+  Modal,
+  Box,
+  Typography,
+  Button,
+  Radio,
+  RadioGroup,
+  FormControlLabel
+} from '@mui/material'
 const Cart = () => {
   const apiUrl = process.env.REACT_APP_API_URL
   const { user } = useContext(UserContext)
@@ -34,7 +44,9 @@ const Cart = () => {
 
   const fetchCartItems = async () => {
     try {
-      const response = await axios.get(`${apiUrl}api/cart/get-cart`, { withCredentials: true })
+      const response = await axios.get(`${apiUrl}api/cart/get-cart`, {
+        withCredentials: true
+      })
       setCartItems(response.data.cart.items)
       console.log('response.data.cart.items', response.data.cart.items)
       calculateFinalTotal(response.data.cart.items, discount)
@@ -45,7 +57,9 @@ const Cart = () => {
 
   const fetchCoupons = async () => {
     try {
-      const response = await axios.get(`${apiUrl}api/coupon/getAll`, { withCredentials: true })
+      const response = await axios.get(`${apiUrl}api/coupon/getAll`, {
+        withCredentials: true
+      })
       setCoupons(response.data)
     } catch (err) {
       console.error(err)
@@ -54,8 +68,10 @@ const Cart = () => {
 
   const fetchAddresses = async () => {
     if (!user) return
-    try { 
-      const response = await axios.get(`${apiUrl}api/user/addresses`, { withCredentials: true })
+    try {
+      const response = await axios.get(`${apiUrl}api/user/addresses`, {
+        withCredentials: true
+      })
       setAddresses(response.data.data)
       console.log('addresses', response.data.data)
     } catch (err) {
@@ -64,13 +80,14 @@ const Cart = () => {
   }
 
   const handleDelete = (id, variant) => {
-    axios.delete(`${apiUrl}api/cart/remove-item`, {
-      data: {
-        productId: id,
-        variant: variant
-      },
-      withCredentials: true
-    })
+    axios
+      .delete(`${apiUrl}api/cart/remove-item`, {
+        data: {
+          productId: id,
+          variant: variant
+        },
+        withCredentials: true
+      })
       .then(res => {
         fetchCartItems()
         toast.success('Item removed from cart')
@@ -84,11 +101,16 @@ const Cart = () => {
   // Handle quantity change
   const handleQuantityChange = (id, variant, newQuantity) => {
     // Send the update request to the backend
-    axios.put(`${apiUrl}api/cart/update-item`, {
-      productId: id,
-      variant: variant, // Ensure variant is a string
-      quantity: newQuantity
-    }, { withCredentials: true })
+    axios
+      .put(
+        `${apiUrl}api/cart/update-item`,
+        {
+          productId: id,
+          variant: variant, // Ensure variant is a string
+          quantity: newQuantity
+        },
+        { withCredentials: true }
+      )
       .then(res => {
         // Fetch the updated cart items to ensure consistency
         fetchCartItems()
@@ -137,7 +159,11 @@ const Cart = () => {
     const calculatedDiscount = (total * coupon.discountPercentage) / 100
     setDiscount(calculatedDiscount)
     calculateFinalTotal(cartItems, calculatedDiscount)
-    toast.success(`Coupon "${coupon.code}" applied! You saved $${calculatedDiscount.toFixed(2)}`)
+    toast.success(
+      `Coupon "${coupon.code}" applied! You saved $${calculatedDiscount.toFixed(
+        2
+      )}`
+    )
     setIsModalOpen(false)
   }
 
@@ -149,9 +175,23 @@ const Cart = () => {
 
       {/* Conditional rendering based on cartItems length */}
       {cartItems.length === 0 ? (
-        <div className='w-full h-full flex flex-col justify-center items-center'>
-          <h1 className='md:text-[30px] text-[20px] font-semibold'>Your cart is empty</h1>
-          <img src={emptyCart2} alt='Empty Cart' className='w-1/2' />
+        <div className='w-full h-[26rem] flex gap-5 justify-center items-center'>
+          <div className='flex flex-col justify-center item-center '>
+            <h1 className='md:text-[30px] text-[20px] font-semibold '>
+              It looks like your cart is empty.
+            </h1>
+
+            <a
+              href='./'
+              className=' text-[20px] center font-semibold p-3 border bg-black text-white hover:bg-white hover:text-black w-fit'
+            >
+              Start SHOPPING now!
+            </a>
+          </div>
+
+          <div className='w-[26rem]'>
+            <img src={emptyCart2} alt='Empty Cart' className='w-full h-full' />
+          </div>
         </div>
       ) : (
         <div className='flex gap-2'>
@@ -181,7 +221,10 @@ const Cart = () => {
                         className='object-cover w-full h-full'
                       />
                     </div>
-                    <div className='ml-3 flex items-center cursor-pointer' onClick={() => navigate(`/product/${item.product._id}`)}>
+                    <div
+                      className='ml-3 flex items-center cursor-pointer'
+                      onClick={() => navigate(`/product/${item.product._id}`)}
+                    >
                       <p className='text-[18px] font-bold'>{item.name}</p>
                     </div>
                   </td>
@@ -196,17 +239,24 @@ const Cart = () => {
                       value={item.quantity}
                       min='1'
                       className='w-[50px] p-2 border rounded'
-                      onChange={(e) => {
+                      onChange={e => {
                         const newQuantity = parseInt(e.target.value, 10)
                         if (newQuantity >= 1) {
-                          handleQuantityChange(item._id, item.variant, newQuantity)
+                          handleQuantityChange(
+                            item._id,
+                            item.variant,
+                            newQuantity
+                          )
                         }
                       }}
                     />
                   </td>
                   <td>${item.price.toFixed(2)}</td>
                   <td>
-                    <button className='text-red-500 hover:text-red-700' onClick={() => handleDelete(item._id, item.variant)}>
+                    <button
+                      className='text-red-500 hover:text-red-700'
+                      onClick={() => handleDelete(item._id, item.variant)}
+                    >
                       <DeleteOutlineOutlined sx={{ fontSize: '30px' }} />
                     </button>
                   </td>
@@ -250,7 +300,9 @@ const Cart = () => {
             </div>
 
             <button className='p-3 mt-2 rounded-sm hover:bg-white hover:text-black border-2 text-[15px] transition-all duration-200 font-semibold border-black bg-black text-white'>
-              {cartItems.length > 0 ? `CHECK OUT (${cartItems.length})` : 'CHECK OUT'}
+              {cartItems.length > 0
+                ? `CHECK OUT (${cartItems.length})`
+                : 'CHECK OUT'}
             </button>
 
             {/* Apply Coupon Button */}
@@ -268,8 +320,8 @@ const Cart = () => {
       <Modal
         open={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        aria-labelledby="apply-coupon-modal-title"
-        aria-describedby="apply-coupon-modal-description"
+        aria-labelledby='apply-coupon-modal-title'
+        aria-describedby='apply-coupon-modal-description'
       >
         <Box
           sx={{
@@ -281,19 +333,19 @@ const Cart = () => {
             bgcolor: 'background.paper',
             border: '2px solid #000',
             boxShadow: 24,
-            p: 4,
+            p: 4
           }}
         >
-          <Typography id="apply-coupon-modal-title" variant="h6" component="h2">
+          <Typography id='apply-coupon-modal-title' variant='h6' component='h2'>
             Select a Coupon
           </Typography>
           <RadioGroup
-            aria-labelledby="coupon-radio-group"
-            name="coupon-radio-group"
+            aria-labelledby='coupon-radio-group'
+            name='coupon-radio-group'
             value={selectedCoupon}
-            onChange={(e) => setSelectedCoupon(e.target.value)}
+            onChange={e => setSelectedCoupon(e.target.value)}
           >
-            {coupons.map((coupon) => (
+            {coupons.map(coupon => (
               <FormControlLabel
                 key={coupon._id}
                 value={coupon._id}
@@ -302,8 +354,12 @@ const Cart = () => {
               />
             ))}
           </RadioGroup>
-          <Box mt={2} display="flex" justifyContent="flex-end">
-            <Button variant="contained" color="primary" onClick={confirmApplyCoupon}>
+          <Box mt={2} display='flex' justifyContent='flex-end'>
+            <Button
+              variant='contained'
+              color='primary'
+              onClick={confirmApplyCoupon}
+            >
               Apply
             </Button>
           </Box>
