@@ -8,98 +8,58 @@ import {
   ShoppingCartOutlined
 } from '@mui/icons-material'
 import CloseIcon from '@mui/icons-material/Close'
-import vingtageboy2 from '../../assets/images/vingtageboy2.png'
-import { Link } from 'react-router-dom'
-
-const categories = {
-  men: [
-    {
-      title: 'Vintage shirt',
-      items: ['Polo', 't-shirt', 'Polo', 't-shirt', 'Polo', 't-shirt']
-    },
-    {
-      title: 'Pant',
-      items: ['Polo', 't-shirt', 'Polo', 't-shirt', 'Polo', 't-shirt']
-    } 
-  ],
-  women: [
-    { title: 'Dresses', items: ['Maxi', 'Midi', 'Mini', 'Casual', 'Formal'] },
-    { title: 'Shoes', items: ['Heels', 'Flats', 'Boots', 'Sneakers'] }
-  ],
-  kid: [
-    { title: 'Dresses', items: ['Maxi', 'Midi', 'Mini', 'Casual', 'Formal'] },
-    { title: 'Shoes', items: ['Heels', 'Flats', 'Boots', 'Sneakers'] }
-  ],
-  unisex: [
-    { title: 'Dresses', items: ['Maxi', 'Midi', 'Mini', 'Casual', 'Formal'] },
-    { title: 'Shoes', items: ['Heels', 'Flats', 'Boots', 'Sneakers'] }
-  ]
-}
-
-// const cartItems = [
-//   {
-//     id: 1,
-//     name: 'Wireless Headphones',
-//     price: 99.99,
-//     quantity: 1,
-//     image: 'http://localhost:3000/static/media/item5-1.506f4605917d1b5ddddf.png'
-//   },
-//   {
-//     id: 2,
-//     name: 'Smart Watch',
-//     price: 199.99,
-//     quantity: 2,
-//     image: 'http://localhost:3000/static/media/item5-1.506f4605917d1b5ddddf.png'
-//   },
-//   {
-//     id: 3,
-//     name: 'Bluetooth Speaker',
-//     price: 49.99,
-//     quantity: 3,
-//     image: 'http://localhost:3000/static/media/item5-1.506f4605917d1b5ddddf.png'
-//   }
-// ]
+import { Link, useNavigate } from 'react-router-dom'
 
 const Header = () => {
   const apiUrl = process.env.REACT_APP_API_URL;
   const axios = useAxios();
+  const navigate = useNavigate()
   const [cartItems, setCartItems] = useState([]);
   const displayCartItems = cartItems?.slice(0, 4);
   const remainingItemsCount = cartItems?.length - displayCartItems?.length;
 
   const [isSearchVisible, setIsSearchVisible] = useState(false)
-  const [activeCategory, setActiveCategory] = useState(null)
   const [isCartVisible, setIsCartVisible] = useState(false)
-
+  const [categories, setCategories] = useState([])
   const { user } = useContext(UserContext);
 
   const dropdownRef = useRef(null)
   const buttonRef = useRef(null)
 
-  const handleCloseCart = useCallback(() => {
-    setIsCartVisible(false)
+  const handleCloseCart = useCallback((event) => {
+    if (
+      dropdownRef.current &&
+      !dropdownRef.current.contains(event.target) &&
+      buttonRef.current &&
+      !buttonRef.current.contains(event.target)
+    ) {
+      setIsCartVisible(false)
+    }
+  }, [])
+
+  const getCategories = async () => {
+    try {
+      const response = await axios.get(`${apiUrl}api/product/get-categories`)
+      console.log(response.data.data)
+      setCategories(response.data.data)
+    } catch (error) {
+      console.error('Error fetching categories:', error)
+    }
+  }
+
+  useEffect(() => {
+    getCategories()
   }, [])
 
   useEffect(() => {
-    const handleClickOutside = event => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target) &&
-        buttonRef.current &&
-        !buttonRef.current.contains(event.target)
-      ) {
-        handleCloseCart()
-      }
-    }
-
     if (isCartVisible) {
-      document.addEventListener('mousedown', handleClickOutside)
+      document.addEventListener('mousedown', handleCloseCart)
     } else {
-      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('mousedown', handleCloseCart)
     }
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('mousedown', handleCloseCart)
     }
   }, [isCartVisible, handleCloseCart])
 
@@ -120,11 +80,6 @@ const Header = () => {
     }
   }, [axios, apiUrl, user])
 
-  
-
-  const handleNavMouseOver = category => {
-    setActiveCategory(category)
-  }
 
   const handleSearchClick = () => {
     setIsSearchVisible(true)
@@ -136,7 +91,6 @@ const Header = () => {
 
   const handleCartClick = () => {
     setIsCartVisible(prev => !prev)
-    console.log(isCartVisible)
   }
 
   return (
@@ -157,38 +111,14 @@ const Header = () => {
           {/* Navigation Menu */}
           <nav className='mt-4 md:mt-0'>
             <ul className='flex flex-col md:flex-row gap-4 md:gap-16 text-lg font-bold'>
-              {Object.keys(categories)?.map(category => (
+              {categories?.map(category => (
                 <li key={category} className='relative group'>
                   <Link
-                    to={`/collection/${category}`}
-                    onMouseOver={() => handleNavMouseOver(category)}
+                    to={`/${category}`}
                     className='hover:text-blue-500 focus:outline-none'
                   >
                     {category.toUpperCase()}
                   </Link>
-                  {activeCategory === category && (
-                    <div className='absolute w-[1000px] bg-white shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-50 transition-all duration-300'>
-                      <div className='flex justify-around items-center p-4 w-full'>
-                        {categories[activeCategory]?.map(categoryGroup => (
-                          <div key={categoryGroup.title} className='p-4'>
-                            <h3 className='font-bold'>{categoryGroup.title}</h3>
-                            <ul>
-                              {categoryGroup.items?.map((item, index) => (
-                                <li key={index}>{item}</li>
-                              ))}
-                            </ul>
-                          </div>
-                        ))}
-                        <div>
-                          <img
-                            src={vingtageboy2}
-                            alt='Category'
-                            className='w-48 h-32 object-cover'
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  )}
                 </li>
               ))}
             </ul>
@@ -225,7 +155,7 @@ const Header = () => {
                 >
                   <div className='flex justify-around gap-4 p-4 w-[347px] h-full flex-col bg-white transition-all duration-300'>
                     {displayCartItems?.map(item => (
-                      <div className='relative border-b border-gray-300'>
+                      <div key={item.id} className='relative border-b border-gray-300'>
                         <div className='flex items-center gap-4'>
                           <img
                             src={item.image}
@@ -233,8 +163,8 @@ const Header = () => {
                             className='w-24 h-24'
                           />
                           <div>
-                            <div key={item.id}>{item.name}</div>
-                            <div key={item.id} className='font-bold'>
+                            <div>{item.name}</div>
+                            <div className='font-bold'>
                               {item.price}$
                             </div>
                           </div>
@@ -250,12 +180,9 @@ const Header = () => {
                           remainingItemsCount > 0 ? `${remainingItemsCount} More Items In Cart` : 'More Details In Cart'
                         }
                       </div>
-                      <button
-                        className='bg-black text-white p-2 rounded-md'
-                        onClick={() => (window.location.href = './cart')}
-                      >
+                      <Link to='/cart' className='bg-black text-white p-2 rounded-md' onClick={console.log('clicked')}>
                         View Cart
-                      </button>
+                      </Link>
                     </div>
                   </div>
                 </div>

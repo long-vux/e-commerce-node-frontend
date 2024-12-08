@@ -37,6 +37,7 @@ const Cart = () => {
     try {
       const response = await axios.get(`${apiUrl}api/cart/get-cart`, { withCredentials: true })
       setCartItems(response.data.cart.items)
+      console.log('response.data.cart.items', response.data.cart.items)
       calculateFinalTotal(response.data.cart.items, discount)
     } catch (err) {
       console.error(err)
@@ -83,28 +84,21 @@ const Cart = () => {
 
   // Handle quantity change
   const handleQuantityChange = (id, variant, newQuantity) => {
-    setCartItems(prevItems =>
-      prevItems.map(item =>
-        item.product._id === id && item.variant === variant
-          ? { ...item, quantity: newQuantity, price: item.product.price * newQuantity }
-          : item
-      )
-    )
-
-    // Optional: Update the backend immediately
+    // Send the update request to the backend
     axios.put(`${apiUrl}api/cart/update-item`, {
       productId: id,
-      variant: variant,
+      variant: variant, // Ensure variant is a string
       quantity: newQuantity
     }, { withCredentials: true })
       .then(res => {
-        // Optionally refetch to ensure consistency
+        // Fetch the updated cart items to ensure consistency
         fetchCartItems()
+        toast.success('Cart updated successfully')
       })
       .catch(err => {
         console.error(err)
         toast.error('Failed to update cart')
-        // Optionally, revert the quantity change if the update fails
+        // Optionally, refetch to revert changes if the update fails
         fetchCartItems()
       })
   }
@@ -183,13 +177,13 @@ const Cart = () => {
                     </div>
                     <div className='w-[140px] h-[140px] border'>
                       <img
-                        src={item.product.image}
-                        alt={item.product.name}
+                        src={item.image}
+                        alt={item.name}
                         className='object-cover w-full h-full'
                       />
                     </div>
                     <div className='ml-3 flex items-center cursor-pointer' onClick={() => navigate(`/product/${item.product._id}`)}>
-                      <p className='text-[18px] font-bold'>{item.product.name}</p>
+                      <p className='text-[18px] font-bold'>{item.name}</p>
                     </div>
                   </td>
                   <td>
@@ -206,14 +200,14 @@ const Cart = () => {
                       onChange={(e) => {
                         const newQuantity = parseInt(e.target.value, 10)
                         if (newQuantity >= 1) {
-                          handleQuantityChange(item.product._id, item.variant, newQuantity)
+                          handleQuantityChange(item._id, item.variant, newQuantity)
                         }
                       }}
                     />
                   </td>
                   <td>${item.price.toFixed(2)}</td>
                   <td>
-                    <button className='text-red-500 hover:text-red-700' onClick={() => handleDelete(item.product._id, item.variant)}>
+                    <button className='text-red-500 hover:text-red-700' onClick={() => handleDelete(item._id, item.variant)}>
                       <DeleteOutlineOutlined sx={{ fontSize: '30px' }} />
                     </button>
                   </td>

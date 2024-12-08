@@ -11,7 +11,7 @@ function App() {
     <div className="App">
       <GoogleOAuthProvider clientId={process.env.REACT_APP_GOOGLE_CLIENT_ID}>
         <UserProvider> {/* Wrap with AppProvider */}
-          <Router>
+          <Router> 
             <ToastContainer
               position="top-center"
               autoClose={3000}

@@ -20,6 +20,7 @@ const ProductDetail = () => {
     axios.get(`${process.env.REACT_APP_API_URL}api/product/${productId}`)
       .then(res => {
         setProduct(res.data.data.product)
+        console.log('product', res.data.data.product)
         setVariants(res.data.data.product.variants)
       })
       .catch(err => console.log(err))
@@ -47,7 +48,9 @@ const ProductDetail = () => {
       variant: selectedVariant
     })
       .then(res => {
+        
         toast.success('Product added to cart');
+        window.location.reload();
       })
       .catch(err => {
         toast.error('Error adding product to cart');
@@ -79,14 +82,17 @@ const ProductDetail = () => {
       <div className="flex flex-col md:flex-row">
         <div className="md:w-1/2">
           <div className="relative">
-            <img src={product?.image} alt={product?.name} className="w-full" />
+            <img src={product?.images[0]} alt={product?.name} className="w-full" />
           </div>
           <div className="flex mt-2 space-x-2">
-            <img src="https://placehold.co/60x60" alt="Thumbnail 1" className="w-20 h-20 border" />
-            <img src="https://placehold.co/60x60" alt="Thumbnail 2" className="w-20 h-20 border" />
-            <img src="https://placehold.co/60x60" alt="Thumbnail 3" className="w-20 h-20 border" />
-            <img src="https://placehold.co/60x60" alt="Thumbnail 4" className="w-20 h-20 border" />
-            <img src="https://placehold.co/60x60" alt="Thumbnail 5" className="w-20 h-20 border" />
+            {product?.images.slice(1).map((image, index) => (
+              <img
+                key={index}
+                src={`${image}`}
+                alt={`Thumbnail ${index + 1}`}
+                className="w-20 h-20 border cursor-pointer"
+              />
+            ))}
           </div>
         </div>
         <div className="md:w-1/2 md:pl-8">
@@ -108,16 +114,23 @@ const ProductDetail = () => {
           <div className='mt-4'>
             <span className='font-bold'>SIZE - COLOR</span>
             <div className='flex mt-2'>
-              <select className='border px-4 py-2 mr-2' onChange={(e) => setSelectedVariant(e.target.value)}>
+              <select
+                className='border px-4 py-2 mr-2'
+                value={selectedVariant || ''}
+                onChange={(e) => setSelectedVariant(e.target.value)}
+              >
+                <option value="" disabled>
+                  Choose variant
+                </option>
                 {Array.isArray(product.variants) && product.variants.length > 0 ? (
                   product.variants.map((variant) => (
-                    <option key={variant._id} value={variant.name}>
-                      {variant.name} ({variant.stock} in stock)
+                    <option key={variant._id} value={`${variant.size} - ${variant.color}`}>
+                      {variant.size} - {variant.color} ({variant.stock} in stock)
                     </option>
                   ))
                 ) : (
                   <option disabled>No variants available</option>
-                )}
+                )} 
               </select>
             </div>
           </div>
