@@ -13,7 +13,7 @@ import RecoverPassword from '../pages/RecoverPassword'
 import Shopping from '../pages/Shopping'
 import ProductDetail from '../pages/ProductDetail'
 import Checkout from '../pages/Checkout'
-
+import HistoryPurchase from '../pages/HistoryPurchase'
 const MainRoutes = () => (
   <div className='overflow-x-hidden'>
     <Header />
@@ -28,6 +28,7 @@ const MainRoutes = () => (
       <Route path="/change-password" element={<ChangePassword />} />
       <Route path='cart/checkout' element={<Checkout />} />
       <Route path='/verify-email/:userId/:token' element={<VerifyEmail />} />
+      <Route path='/history-purchase' element={<HistoryPurchase />} />
       {/* Add a fallback route for unknown paths */}
       {/* <Route path="*" element={<ErrorPage />} /> */}
       <Route path='/' element={<Home />} />

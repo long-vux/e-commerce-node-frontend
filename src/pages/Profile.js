@@ -234,7 +234,7 @@ const Profile = () => {
           </button>
           <button
             className='flex items-center mb-4 bg-white p-4 border w-full hover:bg-black hover:text-white transition-all duration-300'
-            onClick={() => navigate('/cart')}
+            onClick={() => navigate('/history-purchase')}
           >
             <ShoppingBagOutlined sx={{ fontSize: 30, marginRight: 1 }} />
             <span className='text-xl'>My Purchase</span>
