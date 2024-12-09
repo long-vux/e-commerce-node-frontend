@@ -26,7 +26,7 @@ function ProductList ({ products = [] }) {
   }
 
   return (
-    <div className='flex flex-col gap-6'>
+    <div className='flex flex-col gap-6 '>
       {/* Product Grid */}
       <div className='grid grid-cols-2 md:grid-cols-4 gap-4'>
         {currentProducts.length > 0 ? (

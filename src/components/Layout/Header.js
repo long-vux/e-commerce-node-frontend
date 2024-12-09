@@ -11,29 +11,32 @@ import logo from '../../assets/images/logo.png'
 import {
   Search,
   PersonOutlineOutlined,
-  ShoppingCartOutlined
+  ShoppingCartOutlined,
+  Menu
 } from '@mui/icons-material'
 import CloseIcon from '@mui/icons-material/Close'
 import { Link, useNavigate } from 'react-router-dom'
 import Search_product from './Search_product'
+import { Drawer, IconButton } from '@mui/material'
 
 const Header = () => {
-  const apiUrl = process.env.REACT_APP_API_URL;
-  const axios = useAxios();
+  const apiUrl = process.env.REACT_APP_API_URL
+  const axios = useAxios()
   const navigate = useNavigate()
-  const [cartItems, setCartItems] = useState([]);
-  const displayCartItems = cartItems?.slice(0, 4);
-  const remainingItemsCount = cartItems?.length - displayCartItems?.length;
+  const [cartItems, setCartItems] = useState([])
+  const displayCartItems = cartItems?.slice(0, 4)
+  const remainingItemsCount = cartItems?.length - displayCartItems?.length
 
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isSearchVisible, setIsSearchVisible] = useState(false)
   const [isCartVisible, setIsCartVisible] = useState(false)
   const [categories, setCategories] = useState([])
-  const { user } = useContext(UserContext);
+  const { user } = useContext(UserContext)
 
   const dropdownRef = useRef(null)
   const buttonRef = useRef(null)
 
-  const handleCloseCart = useCallback((event) => {
+  const handleCloseCart = useCallback(event => {
     if (
       dropdownRef.current &&
       !dropdownRef.current.contains(event.target) &&
@@ -47,7 +50,6 @@ const Header = () => {
   const getCategories = async () => {
     try {
       const response = await axios.get(`${apiUrl}api/product/get-categories`)
-      console.log(response.data.data)
       setCategories(response.data.data)
     } catch (error) {
       console.error('Error fetching categories:', error)
@@ -87,7 +89,6 @@ const Header = () => {
     }
   }, [axios, apiUrl, user])
 
-
   const handleSearchClick = () => {
     setIsSearchVisible(true)
   }
@@ -100,10 +101,14 @@ const Header = () => {
     setIsCartVisible(prev => !prev)
   }
 
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen)
+  }
+
   return (
-    <header className='w-full bg-white shadow-md sticky z-40 '>
+    <header className='w-full bg-white shadow-md sticky z-40'>
       {!isSearchVisible ? (
-        <div className='flex flex-col md:flex-row justify-around items-center '>
+        <div className='flex flex-row justify-between items-center px-10'>
           {/* Logo */}
           <div className='flex items-center'>
             <a href='/'>
@@ -115,9 +120,9 @@ const Header = () => {
             </a>
           </div>
 
-          {/* Navigation Menu */}
-          <nav className='mt-4 md:mt-0'>
-            <ul className='flex flex-col md:flex-row gap-4 md:gap-16 text-lg font-bold'>
+          {/* Navigation Menu for Desktop */}
+          <nav className='hidden md:block mt-4'>
+            <ul className='flex gap-4 md:gap-16 text-lg font-bold'>
               {categories?.map(category => (
                 <li key={category} className='relative group'>
                   <Link
@@ -154,26 +159,31 @@ const Header = () => {
                 <ShoppingCartOutlined fontSize='large' />
               </button>
 
-              {/* This is cart */}
+              {/* Cart Dropdown */}
               {isCartVisible && (
                 <div
                   ref={dropdownRef}
-                  className='absolute right-0 bg-black shadow-lg opacity-0 opacity-100 transition-all duration-300 z-50'
+                  className='absolute right-0 bg-black shadow-lg opacity-100 transition-all duration-300 z-50'
                 >
                   <div className='flex justify-around gap-4 p-4 w-[347px] h-full flex-col bg-white transition-all duration-300'>
                     {displayCartItems?.map(item => (
-                      <div key={item.id} className='relative border-b border-gray-300'>
-                        <div className='flex items-center gap-4'>
-                          <img
-                            src={item.image}
-                            alt={item.name}
-                            className='w-24 h-24'
-                          />
+                      <div
+                        key={item.id}
+                        className='relative border-b border-gray-300'
+                      >
+                        <div className='flex items-center gap-4 '>
+                          <div className='w-24 h-24'>
+                            {' '}
+                            <img
+                              src={item.image}
+                              alt={item.name}
+                              className='object-cover w-full h-full'
+                            />
+                          </div>
+
                           <div>
                             <div>{item.name}</div>
-                            <div className='font-bold'>
-                              {item.price}$
-                            </div>
+                            <div className='font-bold'>{item.price}$</div>
                           </div>
                         </div>
                         <div className='absolute right-2 bottom-2'>
@@ -187,7 +197,10 @@ const Header = () => {
                           ? `${remainingItemsCount} More Items In Cart`
                           : 'More Details In Cart'}
                       </div>
-                      <Link to='/cart' className='bg-black text-white p-2 rounded-md' onClick={console.log('clicked')}>
+                      <Link
+                        to='/cart'
+                        className='bg-black text-white p-2 rounded-md'
+                      >
                         View Cart
                       </Link>
                     </div>
@@ -195,11 +208,18 @@ const Header = () => {
                 </div>
               )}
             </div>
+
+            {/* Mobile Menu Button */}
+            <div className='md:hidden'>
+              <IconButton onClick={toggleMobileMenu}>
+                <Menu fontSize='large' />
+              </IconButton>
+            </div>
           </div>
         </div>
       ) : (
         <div className='p-4 py-8 transition-all duration-300'>
-          <Search_product/>
+          <Search_product />
           <button
             onClick={handleSearchClose}
             className='absolute p-2 top-[10%] right-[1%] font-bold text-2xl'
@@ -209,7 +229,31 @@ const Header = () => {
         </div>
       )}
 
-      {/*  infinite scrolling */}
+      {/* Off-canvas Menu for Mobile */}
+      <Drawer anchor='left' open={isMobileMenuOpen} onClose={toggleMobileMenu}>
+        <div className='flex flex-col p-4 w-[20rem]'>
+          <IconButton onClick={toggleMobileMenu}>
+            <CloseIcon />
+          </IconButton>
+          <nav className='mt-4'>
+            <ul className='flex flex flex-col gap-4 text-lg font-bold'>
+              {categories?.map(category => (
+                <li key={category}>
+                  <Link
+                    to={`category/${category}`}
+                    className='hover:text-blue-500 focus:outline-none'
+                    onClick={toggleMobileMenu}
+                  >
+                    {category.toUpperCase()}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </div>
+      </Drawer>
+
+      {/* Infinite scrolling */}
       {!isSearchVisible && (
         <div className='hidden md:flex justify-center bg-black text-white py-2 scroll-container tracking-wide font-bold -z-20'>
           <div className='flex gap-12 italic RightToLeft z-0'>
