@@ -1,12 +1,5 @@
 import React, { useState, useEffect, useContext, useCallback } from 'react'
-import {
-  Person2Outlined,
-  LogoutOutlined,
-  ShoppingBagOutlined,
-  EditOutlined,
-  AddOutlined,
-  DeleteOutlined
-} from '@mui/icons-material'
+import { AddOutlined } from '@mui/icons-material'
 import {
   Dialog,
   DialogTitle,
@@ -44,7 +37,7 @@ const StyledFormControlLabel = styled(props => <FormControlLabel {...props} />)(
   })
 )
 
-function MyFormControlLabel (props) {
+function MyFormControlLabel(props) {
   const radioGroup = useRadioGroup()
 
   let checked = false
@@ -63,7 +56,7 @@ MyFormControlLabel.propTypes = {
   value: PropTypes.any
 }
 
-function Checkout () {
+function Checkout() {
   const apiUrl = process.env.REACT_APP_API_URL
   const navigate = useNavigate()
   const axios = useAxios()
@@ -92,15 +85,63 @@ function Checkout () {
   const [street, setStreet] = useState('')
   const [receiverName, setReceiverName] = useState('')
   const [receiverPhone, setReceiverPhone] = useState(user?.phone || '')
+  const [districtId, setDistrictId] = useState('')
+  const [cartItems, setCartItems] = useState([])
+  const [discount, setDiscount] = useState(0)
+  const [finalTotal, setFinalTotal] = useState(0)
 
+  const [coupons, setCoupons] = useState([])
+  const [selectedCoupon, setSelectedCoupon] = useState(null)
   const [error, setError] = useState('')
 
-  // Fetch user profile and addresses on load
   useEffect(() => {
     if (user) {
       fetchAddresses()
+      fetchCartItems()
+      fetchCoupons()
     }
   }, [user])
+
+  const fetchCartItems = async () => {
+    try {
+      const response = await axios.get(`${apiUrl}api/cart/get-cart`, { withCredentials: true })
+      setCartItems(response.data.cart.items)
+      calculateFinalTotal(response.data.cart.items, discount)
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+
+  // ========================================================
+  //                         Coupon 
+  // ========================================================
+
+  const fetchCoupons = async () => {
+    try {
+      const response = await axios.get(`${apiUrl}api/coupon/getAll`, { withCredentials: true })
+      setCoupons(response.data)
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  // Calculate total price of cart
+  const calculateTotalPrice = () => {
+    return cartItems.reduce((total, item) => total + item.price, 0)
+  }
+
+  // Calculate final total after discount and shipping
+  const calculateFinalTotal = (items, appliedDiscount) => {
+    const total = items.reduce((sum, item) => sum + item.price, 0)
+    const shipping = 2
+    const discountedTotal = total - appliedDiscount + shipping
+    setFinalTotal(discountedTotal)
+  }
+
+  // ========================================================
+  //                             Address
+  // ========================================================
 
   const fetchAddresses = useCallback(async () => {
     try {
@@ -163,7 +204,8 @@ function Checkout () {
             ward: selectedWard,
             street,
             receiverName,
-            receiverPhone
+            receiverPhone,
+            districtId
           }
         )
         toast.success('Address updated successfully')
@@ -176,7 +218,8 @@ function Checkout () {
             ward: selectedWard,
             street,
             receiverName,
-            receiverPhone
+            receiverPhone,
+            districtId
           }
         )
         toast.success('Address added successfully')
@@ -241,6 +284,7 @@ function Checkout () {
   const handleAddressSelect = event => {
     const selectedId = event.target.value
     const address = addresses.find(addr => addr._id === selectedId)
+    setDistrictId(address.districtId)
     setTempAddress(address)
   }
 
@@ -253,9 +297,6 @@ function Checkout () {
       toast.error('Please select an address.')
     }
   }
-
-  console.log('This is chosen address: ', chosenAddress)
-  console.log('This is addresses : ', addresses)
 
   return (
     <div class='flex justify-center items-center min-h-screen'>
@@ -298,98 +339,55 @@ function Checkout () {
                 </div>
               ) : null}
 
-              {/* <div class='grid grid-cols-1 md:grid-cols-2 gap-4 mb-4'>
-                <div>
-                  <label class='block text-sm font-medium mb-1'>
-                    First name
-                  </label>
-                  <input
-                    type='text'
-                    class='w-full border border-1 border-gray-300 rounded-lg p-2'
-                  />
-                </div>
-                <div>
-                  <label class='block text-sm font-medium mb-1'>
-                    Last name
-                  </label>
-                  <input
-                    type='text'
-                    class='w-full border border-1 border-gray-300 rounded-lg p-2'
-                  />
-                </div>
-              </div>
-              <div class='grid grid-cols-1 md:grid-cols-2 gap-4 mb-4'>
-                <div>
-                  <label class='block text-sm font-medium mb-1'>
-                    Email address
-                  </label>
-                  <input
-                    type='email'
-                    class='w-full border border-1 border-gray-300 rounded-lg p-2'
-                    placeholder='abc@gmail.com'
-                  />
-                </div>
-                <div>
-                  <label class='block text-sm font-medium mb-1'>Phone</label>
-                  <input
-                    type='text'
-                    class='w-full border border-1 border-gray-300 rounded-lg p-2'
-                    placeholder='(xxx) xx-xxxx'
-                  />
-                </div>
-              </div>
-              <div>
-                <label class='block text-sm font-medium mb-1'>Address</label>
-                <input
-                  type='text'
-                  class='w-full border border-1 border-gray-300 rounded-lg p-2'
-                />
-              </div> */}
+
             </div>
-            <div class='border p-4 rounded-lg mb-4 flex justify-between items-center'>
-              <span class='text-sm font-medium'>Apply coupon</span>
-              <i class='fas fa-chevron-down'></i>
-            </div>
-            <div class='border p-4 rounded-lg flex justify-between items-center'>
-              <span class='text-sm font-medium'>Shipping options</span>
-              <i class='fas fa-chevron-down'></i>
-            </div>
+            <select
+              className='border px-4 py-3 mr-2 w-full rounded-lg mb-4 pr-10 text-black font-semibold'
+              value={selectedCoupon || ''}
+              onChange={(e) => setSelectedCoupon(e.target.value)}
+            >
+              <option value="" disabled>
+                Apply coupon
+              </option>
+              {coupons.map(coupon => (
+                <option key={coupon._id} value={coupon._id}>
+                  <div className='flex justify-between items-center'>
+                    <span className='text-sm'>#{coupon.code} - {coupon.discountPercentage}% off - {coupon.maxUsage} remaining</span>
+                  </div>
+                </option>
+              ))}
+            </select>
+            <select className='border px-4 py-3 mr-2 w-full rounded-lg mb-4 pr-10 text-black font-semibold'>
+              <option value="" disabled defaultValue>
+                Shipping options
+              </option>
+              <option value="standard" >Standard Shipping</option>
+              <option value="express">Express Shipping</option>
+            </select>
           </div>
           <div class='w-full md:w-1/3'>
             <div class='border p-6 rounded-lg'>
               <h2 class='text-lg font-semibold mb-4'>Order Details</h2>
-              <div class='flex justify-between items-center mb-4'>
-                <div class='flex items-center'>
-                  <img
-                    src='https://placehold.co/50x50'
-                    alt='Product image'
-                    class='w-12 h-12 mr-4'
-                  />
-                  <div>
-                    <p class='text-sm'>Crayon Shin-chan...</p>
-                    <p class='text-sm'>x1</p>
+              {cartItems.map(item => (
+                <div class='flex justify-between items-center mb-4'>
+                  <div class='flex items-center'>
+                    <img
+                      src={item.image}
+                      alt='Product image'
+                      class='w-12 h-12 mr-4'
+                    />
+                    <div>
+                      <p class='text-sm'>{item.name}</p>
+                      <p class='text-sm'>x{item.quantity}</p>
+                    </div>
                   </div>
+                  <p class='text-sm'>{item.price}$</p>
                 </div>
-                <p class='text-sm'>80$</p>
-              </div>
-              <div class='flex justify-between items-center mb-4'>
-                <div class='flex items-center'>
-                  <img
-                    src='https://placehold.co/50x50'
-                    alt='Product image'
-                    class='w-12 h-12 mr-4'
-                  />
-                  <div>
-                    <p class='text-sm'>Crayon Shin-chan...</p>
-                    <p class='text-sm'>x1</p>
-                  </div>
-                </div>
-                <p class='text-sm'>80$</p>
-              </div>
+              ))}
               <div class='border-t pt-2'>
                 <div class='flex justify-between items-center mb-2'>
                   <p class='text-sm'>Total product value</p>
-                  <p class='text-sm'>80$</p>
+                  <p class='text-sm'>{calculateTotalPrice()}$</p>
                 </div>
                 <div class='flex justify-between items-center mb-2'>
                   <p class='text-sm text-red-500'>Discount</p>
@@ -448,13 +446,13 @@ function Checkout () {
                 select
                 label='Province'
                 value={
-                  provinces.find(p => p.name === selectedProvince)?.code || ''
+                  provinces.find(p => p.provinceName === selectedProvince)?.provinceID || ''
                 }
                 onChange={e => {
                   const provinceCode = e.target.value
-                  const provinceName = provinces.find(
-                    p => p.code === provinceCode
-                  )?.name
+                  const provinceName = provinces. find(
+                    p => p.provinceID === provinceCode
+                  )?.provinceName
                   setSelectedProvince(provinceName)
                   getDistricts(provinceCode).then(setDistricts)
                   setSelectedDistrict('')
@@ -465,8 +463,8 @@ function Checkout () {
                 margin='normal'
               >
                 {provinces.map(province => (
-                  <MenuItem key={province.code} value={province.code}>
-                    {province.name}
+                  <MenuItem key={province.provinceID} value={province.provinceID}>
+                    {province.provinceName}
                   </MenuItem>
                 ))}
               </TextField>
@@ -474,13 +472,14 @@ function Checkout () {
                 select
                 label='District'
                 value={
-                  districts.find(d => d.name === selectedDistrict)?.code || ''
+                  districts.find(d => d.districtName === selectedDistrict)?.districtID || ''
                 }
                 onChange={e => {
                   const districtCode = e.target.value
                   const districtName = districts.find(
-                    d => d.code === districtCode
-                  )?.name
+                    d => d.districtID === districtCode
+                  )?.districtName
+                  setDistrictId(districtCode)
                   setSelectedDistrict(districtName)
                   getWards(districtCode).then(setWards)
                   setSelectedWard('')
@@ -490,18 +489,18 @@ function Checkout () {
                 disabled={!selectedProvince}
               >
                 {districts.map(district => (
-                  <MenuItem key={district.code} value={district.code}>
-                    {district.name}
+                  <MenuItem key={district.districtID} value={district.districtID}>
+                    {district.districtName}
                   </MenuItem>
                 ))}
               </TextField>
               <TextField
                 select
                 label='Ward'
-                value={wards.find(w => w.name === selectedWard)?.code || ''}
+                value={wards.find(w => w.wardName === selectedWard)?.wardCode || ''}
                 onChange={e => {
                   const wardCode = e.target.value
-                  const wardName = wards.find(w => w.code === wardCode)?.name
+                  const wardName = wards.find(w => w.wardCode === wardCode)?.wardName
                   setSelectedWard(wardName)
                 }}
                 fullWidth
@@ -509,8 +508,8 @@ function Checkout () {
                 disabled={!selectedDistrict}
               >
                 {wards.map(ward => (
-                  <MenuItem key={ward.code} value={ward.code}>
-                    {ward.name}
+                  <MenuItem key={ward.wardCode} value={ward.wardCode}>
+                    {ward.wardName}
                   </MenuItem>
                 ))}
               </TextField>
@@ -576,7 +575,7 @@ function Checkout () {
                         </p>
                         <button
                           className='underline text-blue-600 hover:text-blue-800 cursor-pointer'
-                          onClick={()=>handleDeleteAddress(address._id)}
+                          onClick={() => handleDeleteAddress(address._id)}
                         >
                           delete
                         </button>
