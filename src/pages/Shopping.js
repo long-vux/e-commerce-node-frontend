@@ -1,96 +1,80 @@
-import React, { useEffect, useState } from 'react';
-import poster from '../assets/images/poster.png';
-import { useParams } from 'react-router-dom';
-import ProductList from '../components/Products/ProductList';
-import ProductsAPI from '../api/ProductsAPI';
+import React, { useEffect, useState } from 'react'
+import poster from '../assets/images/poster.png'
+import { useParams } from 'react-router-dom'
+import ProductList from '../components/Products/ProductList'
+import ProductsAPI from '../api/ProductsAPI'
 
 // LIST ITEMS
-import ListSubheader from '@mui/material/ListSubheader';
-import List from '@mui/material/List';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemText from '@mui/material/ListItemText';
-import Collapse from '@mui/material/Collapse';
-import ExpandLess from '@mui/icons-material/ExpandLess';
-import ExpandMore from '@mui/icons-material/ExpandMore';
-import Checkbox from '@mui/material/Checkbox';
-import CircularProgress from '@mui/material/CircularProgress';
-import { Drawer, IconButton } from '@mui/material';
-import { FilterList } from '@mui/icons-material';
+import ListSubheader from '@mui/material/ListSubheader'
+import List from '@mui/material/List'
+import ListItemButton from '@mui/material/ListItemButton'
+import ListItemText from '@mui/material/ListItemText'
+import Collapse from '@mui/material/Collapse'
+import ExpandLess from '@mui/icons-material/ExpandLess'
+import ExpandMore from '@mui/icons-material/ExpandMore'
+import Checkbox from '@mui/material/Checkbox'
+import CircularProgress from '@mui/material/CircularProgress'
+import { Drawer, IconButton } from '@mui/material'
+import { FilterList } from '@mui/icons-material'
 
 const Shopping = () => {
-  const { category } = useParams();
+  const { category } = useParams()
 
   // GET ALL PRODUCTS
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [sortOption, setSortOption] = useState('Availability'); // State for sort option
+  const [products, setProducts] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [sortOption, setSortOption] = useState('Availability') // State for sort option
 
   // LIST COLLAPSE
-  const [openStates, setOpenStates] = useState([]); // Initialize as empty
-  const [selectedFilters, setSelectedFilters] = useState([]); // Initialize as empty
+  const [openStates, setOpenStates] = useState([]) // Initialize as empty
+  const [selectedFilters, setSelectedFilters] = useState([]) // Initialize as empty
 
   // Off-canvas filter state
-  const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
+  const [filterDrawerOpen, setFilterDrawerOpen] = useState(false)
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        setLoading(true);
-        const response = await ProductsAPI.getAllProducts();
+        setLoading(true)
+        const response = await ProductsAPI.getAllProducts()
         if (response.success) {
-          setProducts(response.data || []); // Default to an empty array
-          console.log('Fetched products: ', response.data);
+          setProducts(response.data || []) // Default to an empty array
+          console.log('Fetched products: ', response.data)
         } else {
-          setError('Failed to fetch products.');
+          setError('Failed to fetch products.')
         }
       } catch (err) {
-        setError(err.message || 'Failed to load products.');
+        setError(err.message || 'Failed to load products.')
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
-
-    fetchProducts();
-  }, []);
-
-  const parseVariantDetails = name => {
-    // Ensure 'name' is a string and contains ' - '
-    if (typeof name !== 'string' || !name.includes(' - ')) {
-      return { size: undefined, color: undefined }; // Return default values if invalid
     }
 
-    const [size, color] = name.split(' - ');
-    return { size, color };
-  };
+    fetchProducts()
+  }, [])
 
   // Extract unique tags from products
   const uniqueTags = Array.from(
     new Set(products.flatMap(product => product.tags || []))
-  );
+  )
 
   // Extract unique sizes and colors from the parsed variants
   const uniqueSizes = Array.from(
     new Set(
       products.flatMap(
-        product =>
-          product.variants?.map(
-            variant => parseVariantDetails(variant.name).size || ''
-          ) || []
+        product => product.variants?.map(variant => variant.size || '') || []
       )
     )
-  );
+  )
 
   const uniqueColors = Array.from(
     new Set(
       products.flatMap(
-        product =>
-          product.variants?.map(
-            variant => parseVariantDetails(variant.name).color || ''
-          ) || []
+        product => product.variants?.map(variant => variant.color || '') || []
       )
     )
-  );
+  )
 
   // Define filters based on unique values
   const filters = [
@@ -111,31 +95,31 @@ const Shopping = () => {
       label: 'Size',
       subLabels: uniqueSizes.length > 0 ? uniqueSizes : ['No sizes available']
     }
-  ];
+  ]
 
   // Initialize openStates and selectedFilters based on the number of filters
   useEffect(() => {
-    setOpenStates(new Array(filters.length).fill(false));
-    setSelectedFilters(new Array(filters.length).fill([])); // Initialize with empty arrays
-  }, [filters.length]);
+    setOpenStates(new Array(filters.length).fill(false))
+    setSelectedFilters(new Array(filters.length).fill([])) // Initialize with empty arrays
+  }, [filters.length])
 
   if (loading)
     return (
       <div className='w-full h-full flex justify-center items-center'>
         <CircularProgress />
       </div>
-    );
-  if (error) return <p>Error: {error}</p>;
+    )
+  if (error) return <p>Error: {error}</p>
 
   const handleAddToCart = id => {
-    console.log(`Added product with id ${id} to cart`);
-  };
+    console.log(`Added product with id ${id} to cart`)
+  }
 
   const toggleFilter = index => {
     setOpenStates(prevStates =>
       prevStates.map((state, idx) => (idx === index ? !state : state))
-    );
-  };
+    )
+  }
 
   const handleCheckboxChange = (filterIndex, subLabel) => {
     setSelectedFilters(prevFilters =>
@@ -146,66 +130,66 @@ const Shopping = () => {
             : [...filter, subLabel]
           : filter
       )
-    );
-  };
+    )
+  }
 
   // Adjust the filterProducts function to handle tags
   const filterProducts = () => {
     return products.filter(product => {
       const matchesTags =
         selectedFilters[0].length === 0 ||
-        selectedFilters[0].some(tag => product.tags?.includes(tag)); // Match tags
+        selectedFilters[0].some(tag => product.tags?.includes(tag)) // Match tags
 
       const matchesColor =
         selectedFilters[2].length === 0 ||
         selectedFilters[2].some(selected =>
           product.variants?.some(variant => {
-            const { color } = parseVariantDetails(variant.name) || '';
-            return color === selected;
+            const color = variant.color
+            return color === selected
           })
-        );
+        )
 
       const matchesSize =
         selectedFilters[3].length === 0 ||
         selectedFilters[3].some(selected =>
           product.variants?.some(variant => {
-            const { size } = parseVariantDetails(variant.name) || '';
-            return size === selected;
+            const size = variant.size
+            return size === selected
           })
-        );
+        )
 
       const matchesPrice =
         selectedFilters[1].length === 0 ||
         selectedFilters[1].some(selected => {
-          if (selected === 'Under $20') return product.price < 20;
+          if (selected === 'Under $20') return product.price < 20
           if (selected === '$20 - $50')
-            return product.price >= 20 && product.price <= 50;
+            return product.price >= 20 && product.price <= 50
           if (selected === '$50 - $100')
-            return product.price > 50 && product.price <= 100;
-          if (selected === 'Over $100') return product.price > 100;
-          return false;
-        });
+            return product.price > 50 && product.price <= 100
+          if (selected === 'Over $100') return product.price > 100
+          return false
+        })
 
-      return matchesTags && matchesColor && matchesSize && matchesPrice;
-    });
-  };
+      return matchesTags && matchesColor && matchesSize && matchesPrice
+    })
+  }
 
   // Sorting function
   const sortedProducts = () => {
     switch (sortOption) {
       case 'Price, low to high':
-        return [...filterProducts()].sort((a, b) => a.price - b.price);
+        return [...filterProducts()].sort((a, b) => a.price - b.price)
       case 'Price, high to low':
-        return [...filterProducts()].sort((a, b) => b.price - a.price);
+        return [...filterProducts()].sort((a, b) => b.price - a.price)
       default:
-        return filterProducts(); // Default to filtered products
+        return filterProducts() // Default to filtered products
     }
-  };
+  }
 
   // Off-canvas filter drawer toggle
   const toggleFilterDrawer = () => {
-    setFilterDrawerOpen(!filterDrawerOpen);
-  };
+    setFilterDrawerOpen(!filterDrawerOpen)
+  }
 
   return (
     <div className='relative'>
@@ -355,7 +339,7 @@ const Shopping = () => {
         </Drawer>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default Shopping;
+export default Shopping

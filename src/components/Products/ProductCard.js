@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router-dom'
 
 function ProductCard ({ product }) {
   const navigate = useNavigate()
-  const { name, price, images, totalSold, _id } = product
-
+  const { name, price, images, totalSold, _id, productId } = product
+  console.log('this is product_____: ', product)
   const truncateName = name => {
     return name.length > 40 ? name.substring(0, 40) + '...' : name // 2 lines
   }
@@ -12,13 +12,16 @@ function ProductCard ({ product }) {
   // convert sold to k if it is greater than 1000
   const formattedSold = totalSold > 1000 ? totalSold / 1000 + 'k' : totalSold
 
-  const handleProdClick = _id => {
-    navigate(`/product/${_id}`)
+  const handleProdClick = (_id, productId) => {
+    if (_id) {
+      navigate(`/product/${_id}`)
+    }
+    navigate(`/product/${productId}`)
   }
   return (
     <div
       className='relative p-4 rounded-2xl bg-white shadow-lg hover:scale-105 transition-all duration-300 '
-      onClick={() => handleProdClick(_id)}
+      onClick={() => handleProdClick(_id, productId)}
     >
       <img
         src={images[0]}

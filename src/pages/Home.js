@@ -104,19 +104,7 @@ const Home = () => {
           </div>
         </div>
 
-        {/* shop by styles section */}
-        <div className='w-full h-full mt-20 flex flex-col justify-center items-center'>
-          <h1 className='text-center text-[50px] italic font-semibold'>
-            Shop By Styles
-          </h1>
-          <div className='bg-[rgba(217,217,217,0.2)] w-[100%] mt-10 relative flex justify-center gap-10 items-center py-5'>
-            <ImageWithText imgSrc={y2k} styleName='Y2K' />
-            <ImageWithText imgSrc={vintage} styleName='vintage' />
-            <ImageWithText imgSrc={skater} styleName='skater' />
-            <ImageWithText imgSrc={vintage} styleName='vintage' />
-     
-          </div>
-        </div>
+      
 
         {/* best sellers section */}
         <div className='w-[80%] mx-auto h-full mt-20 flex flex-col justify-center items-center'>
