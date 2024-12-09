@@ -64,6 +64,7 @@ const ProductDetail = () => {
       )
 
       toast.success('Product added to cart')
+      window.location.reload();
       console.log('Updated Cart:', response.data.cart)
 
       // Update the cart state dynamically (if you're using Redux, Context API, etc.)

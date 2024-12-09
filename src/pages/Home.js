@@ -8,17 +8,12 @@ import ProductList from '../components/Products/ProductList'
 import bg from '../assets/images/bg.png'
 import MySwiper from '../components/MySwiper'
 
-// SHOP BY STYLE
-import y2k from '../assets/images/y2k.png'
-import skater from '../assets/images/skater.png'
-import vintage from '../assets/images/vingtageboy2.png'
 
 // NEW ARRIVALS
 import img1 from '../assets/images/item6-1.png'
 import img2 from '../assets/images/item3-1.png'
 import img3 from '../assets/images/item4-1.png'
 import img4 from '../assets/images/item5-1.png'
-import ImageWithText from '../components/ImageWithText'
 
 const Home = () => {
   const [bestSellingProducts, setBestSellingProducts] = useState([])
