@@ -17,9 +17,10 @@ import {
   Typography,
   TextField
 } from '@mui/material'
+import { toast } from 'react-toastify'
 import DeleteIcon from '@mui/icons-material/Delete'
 import EditIcon from '@mui/icons-material/Edit'
-
+import CouponAPI from '../api/couponAPI'
 const CouponManagement = () => {
   const [coupons, setCoupons] = useState([])
   const [page, setPage] = useState(0)
@@ -39,60 +40,81 @@ const CouponManagement = () => {
   const [deleteCouponId, setDeleteCouponId] = useState(null)
 
   const fetchCoupons = async () => {
-    const mockData = [
-      {
-        id: 1,
-        code: 'SAVE10',
-        discountPercentage: 10,
-        maxUsage: 100,
-        usageCount: 50,
-        isActive: true,
-        expiryDate: '2024-12-31'
-      },
-      {
-        id: 2,
-        code: 'WELCOME20',
-        discountPercentage: 20,
-        maxUsage: 200,
-        usageCount: 10,
-        isActive: false,
-        expiryDate: '2024-10-15'
-      }
-      // ... Add the rest of your mock data
-    ]
-    setCoupons(mockData)
+    try {
+      const response = await CouponAPI.getAllCoupons()
+      setCoupons(response)
+    } catch (error) {
+      console.error('Error fetching coupons:', error.message)
+    }
   }
 
   useEffect(() => {
     fetchCoupons()
   }, [])
 
-  const handleAddCoupon = () => {
-    const newId = coupons.length > 0 ? coupons[coupons.length - 1].id + 1 : 1
-    setCoupons([...coupons, { ...newCoupon, id: newId }])
-    setIsAddModalOpen(false)
-    setNewCoupon({
-      code: '',
-      discountPercentage: '',
-      maxUsage: '',
-      usageCount: 0,
-      isActive: true,
-      expiryDate: ''
-    })
+  const handleAddCoupon = async () => {
+    try {
+      // Gọi API để thêm coupon mới
+      const addedCoupon = await CouponAPI.createCoupon(newCoupon)
+
+      // Cập nhật danh sách coupon sau khi thêm
+      setCoupons([...coupons, addedCoupon])
+      toast.success('Coupon added successfully!')
+
+      // Đóng modal và reset form
+      setIsAddModalOpen(false)
+      setNewCoupon({
+        code: '',
+        discountPercentage: '',
+        maxUsage: '',
+        usageCount: 0,
+        isActive: true,
+        expiryDate: ''
+      })
+    } catch (error) {
+      console.error('Error adding coupon:', error.message)
+    }
   }
 
-  const handleEditCoupon = () => {
-    setCoupons(
-      coupons.map(coupon => (coupon.id === editCoupon.id ? editCoupon : coupon))
-    )
-    setIsEditModalOpen(false)
-    setEditCoupon(null)
+  const handleEditCoupon = async () => {
+    try {
+      console.log('Editing coupon:', editCoupon) // Debugging
+      const updatedCoupon = await CouponAPI.updateCoupon(
+        editCoupon._id,
+        editCoupon
+      )
+      console.log('Response from server:', updatedCoupon) // Debugging
+      toast.success('Coupon updated successfully!')
+
+      setCoupons(
+        coupons.map(coupon =>
+          coupon._id === updatedCoupon._id ? updatedCoupon : coupon
+        )
+      )
+
+      setIsEditModalOpen(false)
+      setEditCoupon(null)
+    } catch (error) {
+      console.error('Error updating coupon:', error.message)
+      alert('Failed to update coupon. Please try again.')
+    }
   }
 
-  const handleDeleteCoupon = () => {
-    setCoupons(coupons.filter(coupon => coupon.id !== deleteCouponId))
-    setIsDeleteModalOpen(false)
-    setDeleteCouponId(null)
+  const handleDeleteCoupon = async () => {
+    try {
+      // Call the API to delete the coupon
+      await CouponAPI.deleteCoupon(deleteCouponId)
+
+      // Update the local state
+      setCoupons(coupons.filter(coupon => coupon._id !== deleteCouponId))
+      toast.success('Coupon deleted successfully!')
+
+      // Close the modal and reset deleteCouponId
+      setIsDeleteModalOpen(false)
+      setDeleteCouponId(null)
+    } catch (error) {
+      console.error('Error deleting coupon:', error.message)
+    }
   }
 
   const handleInputChange = (e, isEditing = false) => {
@@ -195,7 +217,7 @@ const CouponManagement = () => {
                       <EditIcon />
                     </IconButton>
                     <IconButton
-                      onClick={() => handleDelete(coupon.id)}
+                      onClick={() => handleDelete(coupon._id)}
                       color='default'
                     >
                       <DeleteIcon />
@@ -258,10 +280,10 @@ const CouponManagement = () => {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setIsAddModalOpen(false)} color='secondary'>
+          <Button onClick={() => setIsAddModalOpen(false)} color='default'>
             Cancel
           </Button>
-          <Button onClick={handleAddCoupon} color='primary'>
+          <Button onClick={handleAddCoupon} color='default'>
             Add
           </Button>
         </DialogActions>
@@ -309,10 +331,10 @@ const CouponManagement = () => {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setIsEditModalOpen(false)} color='secondary'>
+          <Button onClick={() => setIsEditModalOpen(false)} color='default'>
             Cancel
           </Button>
-          <Button onClick={handleEditCoupon} color='primary'>
+          <Button onClick={handleEditCoupon} color='default' >
             Save
           </Button>
         </DialogActions>
@@ -328,10 +350,10 @@ const CouponManagement = () => {
           Are you sure you want to delete this coupon?
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setIsDeleteModalOpen(false)} color='secondary'>
+          <Button onClick={() => setIsDeleteModalOpen(false)} color='default'>
             Cancel
           </Button>
-          <Button onClick={handleDeleteCoupon} color='primary'>
+          <Button onClick={handleDeleteCoupon} color='default'>
             Delete
           </Button>
         </DialogActions>
