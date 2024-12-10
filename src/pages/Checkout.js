@@ -364,6 +364,7 @@ function Checkout() {
     try {
       const { firstName, lastName, email  } = user;
       const address = `${chosenAddress.street}, ${chosenAddress.ward}, ${chosenAddress.district}, ${chosenAddress.province}`;
+      
       const selectedItems = cartItems.map(item => ({
         productId: item._id,
         variant: item.variant
@@ -374,6 +375,8 @@ function Checkout() {
         lastName,
         email,
         address,
+        receiverPhone: chosenAddress.receiverPhone,
+        receiverName: chosenAddress.receiverName,
         selectedItems,
         total: finalTotal,
         discount,
