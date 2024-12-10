@@ -4,27 +4,27 @@ import useAxios from '../utils/axiosInstance'
 import { useParams } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
+import { formatCurrency } from '../utils/formatCurrency'
+import { useNavigate } from 'react-router-dom';
 
 const ProductDetail = () => {
   const axios = useAxios()
   const { productId } = useParams()
   const [product, setProduct] = useState(null)
   const [productByCategory, setProductByCategory] = useState([])
-  const [variants, setVariants] = useState([])
   const [selectedVariant, setSelectedVariant] = useState(null)
   const [quantity, setQuantity] = useState(1)
   const [error, setError] = useState(null)
   const [previewImage, setPreviewImage] = useState('')
+  const navigate = useNavigate();
 
   useEffect(() => {
     axios
       .get(`${process.env.REACT_APP_API_URL}api/product/${productId}`)
       .then(res => {
-        setProduct(res.data.data.product)
-        console.log('product', res.data.data.product)
-        setVariants(res.data.data.product.variants)
-        setVariants(res.data.data.product.variants)
-        setPreviewImage(res.data.data.product.images[0])
+        const product = res.data.data.product
+        setProduct(product)
+        setPreviewImage(product.images[0])
       })
       .catch(err => console.log(err))
   }, [productId])
@@ -163,9 +163,9 @@ const ProductDetail = () => {
             <span className='text-gray-500'>{product?.totalSold} Sold</span>
           </div>
           <div className='text-2xl font-bold mt-2'>
-            {product?.price}${' '}
+            {formatCurrency(product?.price)}{' '}
             <span className='text-red-500 line-through'>
-              {product?.price * 2}$
+              {formatCurrency(product?.price * 2)}
             </span>
           </div>
 

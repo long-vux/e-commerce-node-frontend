@@ -15,7 +15,7 @@ const useAxios = () => {
 
     axiosInstance.interceptors.request.use(
       (config) => {
-        if (cleanToken) {
+        if (cleanToken) { 
           config.headers.authorization = `Bearer ${cleanToken}`;
         }
         return config;

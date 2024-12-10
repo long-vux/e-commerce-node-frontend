@@ -16,11 +16,13 @@ import PropTypes from 'prop-types'
 import { styled } from '@mui/material/styles'
 import RadioGroup, { useRadioGroup } from '@mui/material/RadioGroup'
 
-import { useNavigate } from 'react-router-dom'
 import { getProvinces, getDistricts, getWards } from '../utils/addressService'
 import useAxios from '../utils/axiosInstance'
 import { toast } from 'react-toastify'
 import { UserContext } from '../contexts/UserContext'
+import { calculateFee } from '../utils/ghnApi'
+import { formatCurrency } from '../utils/formatCurrency'
+import { useNavigate } from 'react-router-dom';
 
 const StyledFormControlLabel = styled(props => <FormControlLabel {...props} />)(
   ({ theme }) => ({
@@ -58,17 +60,17 @@ MyFormControlLabel.propTypes = {
 
 function Checkout() {
   const apiUrl = process.env.REACT_APP_API_URL
-  const navigate = useNavigate()
   const axios = useAxios()
   const { user } = useContext(UserContext)
+  const navigate = useNavigate();
 
   const [isEditing, setIsEditing] = useState(false)
   const [isAdding, setIsAdding] = useState(false)
-  const [editedUser, setEditedUser] = useState({})
   const [addresses, setAddresses] = useState([])
-  const [currentAddresses, setCurrentAddresses] = useState([])
   const [chosenAddress, setChosenAddress] = useState(null) // State for the selected address
   const [tempAddress, setTempAddress] = useState(null) // State for the selected address
+  const [cartItems, setCartItems] = useState([])
+  const [totalWeight, setTotalWeight] = useState(0)
 
   // Modal States
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -86,76 +88,137 @@ function Checkout() {
   const [receiverName, setReceiverName] = useState('')
   const [receiverPhone, setReceiverPhone] = useState(user?.phone || '')
   const [districtId, setDistrictId] = useState('')
-  const [cartItems, setCartItems] = useState([])
   const [discount, setDiscount] = useState(0)
   const [finalTotal, setFinalTotal] = useState(0)
-
+  const [shippingFee, setShippingFee] = useState(0)
+  const [serviceTypeId, setServiceTypeId] = useState(1) //1: Express, 2: Standard, 3: Saving
   const [coupons, setCoupons] = useState([])
   const [selectedCoupon, setSelectedCoupon] = useState(null)
-  const [error, setError] = useState('')
+
+  const [totalPrice, setTotalPrice] = useState(0)
+
 
   useEffect(() => {
-    if (user) {
-      fetchAddresses()
-      fetchCartItems()
-      fetchCoupons()
-    }
-  }, [user])
-
+    const loadCartData = async () => {
+      try {
+        if (user) {
+          const items = await fetchCartItems();
+  
+          // Calculate total weight
+          const totalWeight = items.reduce(
+            (total, item) => total + item.weight * item.quantity,
+            0
+          );
+          setTotalWeight(totalWeight);
+          fetchAddresses(totalWeight);
+  
+          const totalPrice = items.reduce((total, item) => total + item.price, 0);
+          setTotalPrice(totalPrice);
+  
+          calculateFinalTotal(totalPrice);
+  
+          fetchCoupons();
+        }
+      } catch (error) {
+        console.error('Error loading cart data:', error);
+      }
+    };
+  
+    loadCartData();
+  }, [user]);
+  
+  useEffect(() => {
+    calculateFinalTotal(totalPrice);
+  }, [selectedCoupon, serviceTypeId, totalPrice, shippingFee, discount]);
+  
+  // ========================================================
+  //                      Fetch Cart Items
+  // ========================================================
   const fetchCartItems = async () => {
     try {
-      const response = await axios.get(`${apiUrl}api/cart/get-cart`, { withCredentials: true })
-      setCartItems(response.data.cart.items)
-      calculateFinalTotal(response.data.cart.items, discount)
+      const response = await axios.get(`${apiUrl}api/cart/get-selected-items`, {
+        withCredentials: true,
+      });
+      const cartItems = response.data.items;
+      setCartItems(cartItems);
+      console.log('cartItems', cartItems);
+      return cartItems;
     } catch (err) {
-      console.error(err)
+      console.error(err);
+      return [];
     }
-  }
-
-
+  };
+  
   // ========================================================
-  //                         Coupon 
+  //                        Coupons
   // ========================================================
-
   const fetchCoupons = async () => {
     try {
-      const response = await axios.get(`${apiUrl}api/coupon/getAll`, { withCredentials: true })
-      setCoupons(response.data)
+      const response = await axios.get(`${apiUrl}api/coupon/getAll`, {
+        withCredentials: true,
+      });
+      setCoupons(response.data);
     } catch (err) {
-      console.error(err)
+      console.error(err);
     }
-  }
-
-  // Calculate total price of cart
-  const calculateTotalPrice = () => {
-    return cartItems.reduce((total, item) => total + item.price, 0)
-  }
-
-  // Calculate final total after discount and shipping
-  const calculateFinalTotal = (items, appliedDiscount) => {
-    const total = items.reduce((sum, item) => sum + item.price, 0)
-    const shipping = 2
-    const discountedTotal = total - appliedDiscount + shipping
-    setFinalTotal(discountedTotal)
-  }
-
+  };
+  
+  const handleCouponChange = (e) => {
+    const couponId = e.target.value;
+    setSelectedCoupon(couponId);
+  
+    const coupon = coupons.find((c) => c._id === couponId);
+    const discount = coupon ? (coupon.discountPercentage * totalPrice) / 100 : 0;
+    setDiscount(discount);
+  };
+  
+  const handleServiceTypeChange = (e) => {
+    setServiceTypeId(e.target.value);
+  };
+  
+  // ========================================================
+  //                Calculate Final Total
+  // ========================================================
+  const calculateFinalTotal = (totalPrice) => {
+    let discountedTotal = totalPrice;
+  
+    if (discount) {
+      discountedTotal -= discount;
+    }
+  
+    switch (serviceTypeId) {
+      case '3': // Express
+        discountedTotal += 30000 + shippingFee + totalPrice * 0.1;
+        break;
+      case '2': // Standard
+        discountedTotal += 15000 + shippingFee + totalPrice * 0.1;
+        break;
+      default: // Save
+        discountedTotal += shippingFee + totalPrice * 0.1;
+        break;
+    }
+  
+    setFinalTotal(discountedTotal);
+  };
+  
   // ========================================================
   //                             Address
   // ========================================================
 
-  const fetchAddresses = useCallback(async () => {
+  const fetchAddresses = useCallback(async (weight) => {
     try {
-      const response = await axios.get(
-        `${process.env.REACT_APP_API_URL}api/user/addresses`
-      )
-      setAddresses(response.data.data)
-      setChosenAddress(response.data.data[0])
-      setTempAddress(response.data.data[0])
-
+      const response = await axios.get(`${apiUrl}api/user/addresses`);
+      const addresses = response.data.data;
+      setAddresses(addresses);
+      setChosenAddress(addresses[0]);
+      setTempAddress(addresses[0]);
+      if (addresses[0]) {
+        fetchShippingFee(addresses[0].districtId, weight);
+      }
     } catch (error) {
-      setError(error.response?.data?.message || 'An error occurred')
+      console.error('Error fetching addresses:', error);
     }
-  }, [axios])
+  }, [axios, apiUrl]);
 
   useEffect(() => {
     const fetchProvinces = async () => {
@@ -164,13 +227,6 @@ function Checkout() {
     }
     fetchProvinces()
   }, [])
-
-  const handleEditClick = () => setIsEditing(true)
-
-  const handleCancelEdit = () => {
-    setEditedUser(user)
-    closeModal()
-  }
 
   const handleAddingState = () => {
     setIsAdding(!isAdding)
@@ -227,7 +283,6 @@ function Checkout() {
       handleAddingState()
       fetchAddresses()
     } catch (error) {
-      setError(error.response?.data?.message || 'An error occurred')
       toast.error(error.response?.data?.message || 'An error occurred')
     }
   }
@@ -240,7 +295,6 @@ function Checkout() {
       toast.success('Address deleted successfully')
       fetchAddresses()
     } catch (error) {
-      setError(error.response?.data?.message || 'An error occurred')
       toast.error(error.response?.data?.message || 'An error occurred')
     }
   }
@@ -281,23 +335,70 @@ function Checkout() {
 
   // Handle chosen address
 
-  const handleAddressSelect = event => {
-    const selectedId = event.target.value
-    const address = addresses.find(addr => addr._id === selectedId)
-    setDistrictId(address.districtId)
-    setTempAddress(address)
-  }
+  const handleAddressSelect = async (event) => {
+    const selectedId = event.target.value;
+    const address = addresses.find(addr => addr._id === selectedId);
+    setTempAddress(address);
+    await fetchShippingFee(address.districtId, totalWeight);
+  };
 
-  const handleSaveChanges = () => {
+  const handleSaveAddressChanges = () => {
     if (chosenAddress) {
       setChosenAddress(tempAddress)
-      toast.success('Address updated successfully!')
       setIsModalOpen(false)
     } else {
       toast.error('Please select an address.')
     }
   }
 
+  // Calculate fee
+  const fetchShippingFee = async (districtId, weight) => {
+    try {
+      const fee = await calculateFee(districtId, weight);
+      setShippingFee(fee);
+    } catch (error) {
+      console.error('Error calculating fee:', error);
+    }
+  };
+
+  const handleCheckout = async () => {
+    try {
+      const { firstName, lastName, email  } = user;
+      const address = `${chosenAddress.street}, ${chosenAddress.ward}, ${chosenAddress.district}, ${chosenAddress.province}`;
+      const selectedItems = cartItems.map(item => ({
+        productId: item._id,
+        variant: item.variant
+      }));
+
+      const payload = {
+        firstName,
+        lastName,
+        email,
+        address,
+        selectedItems,
+        total: finalTotal,
+        discount,
+        shippingFee,
+        tax: totalPrice * 0.1,
+
+      };
+  
+      // Send the checkout request
+      const response = await axios.post(`${apiUrl}api/cart/checkout`, payload, {
+        withCredentials: true
+      });
+  
+      // Handle successful response
+      console.log('Checkout successful', response.data);
+      toast.success('Checkout successful!');
+      navigate('/success'); // Navigate to a success page or handle accordingly
+    } catch (error) {
+      // Handle errors
+      console.error('Error during checkout:', error);
+      toast.error('Checkout failed. Please try again.');
+    }
+  };
+  
   return (
     <div class='flex justify-center items-center min-h-screen'>
       <div class='bg-white p-8 rounded-lg shadow-lg w-full max-w-4xl'>
@@ -344,7 +445,7 @@ function Checkout() {
             <select
               className='border px-4 py-3 mr-2 w-full rounded-lg mb-4 pr-10 text-black font-semibold'
               value={selectedCoupon || ''}
-              onChange={(e) => setSelectedCoupon(e.target.value)}
+              onChange={handleCouponChange}
             >
               <option value="" disabled>
                 Apply coupon
@@ -357,13 +458,21 @@ function Checkout() {
                 </option>
               ))}
             </select>
-            <select className='border px-4 py-3 mr-2 w-full rounded-lg mb-4 pr-10 text-black font-semibold'>
-              <option value="" disabled defaultValue>
-                Shipping options
+            <select
+              className="border px-4 py-3 mr-2 w-full rounded-lg mb-4 pr-10 text-black font-semibold"
+              value={serviceTypeId || ''} // Ensures "Shipping method" is selected by default
+              onChange={handleServiceTypeChange}
+            >
+              <option value="" disabled>
+                Shipping method
               </option>
-              <option value="standard" >Standard Shipping</option>
-              <option value="express">Express Shipping</option>
+              {['1', '2', '3'].map(type => (
+                <option key={type} value={type}>
+                  {type === '1' ? 'Save' : type === '2' ? 'Standard' : 'Express '} - {formatCurrency(type === '1' ? shippingFee : type === '2' ? 15000 + shippingFee : 30000 + shippingFee)}
+                </option>
+              ))}
             </select>
+
           </div>
           <div class='w-full md:w-1/3'>
             <div class='border p-6 rounded-lg'>
@@ -381,32 +490,32 @@ function Checkout() {
                       <p class='text-sm'>x{item.quantity}</p>
                     </div>
                   </div>
-                  <p class='text-sm'>{item.price}$</p>
+                  <p class='text-sm'>{formatCurrency(item.price)}</p>
                 </div>
               ))}
               <div class='border-t pt-2'>
                 <div class='flex justify-between items-center mb-2'>
                   <p class='text-sm'>Total product value</p>
-                  <p class='text-sm'>{calculateTotalPrice()}$</p>
+                  <p class='text-sm'>{formatCurrency(totalPrice)}</p>
                 </div>
                 <div class='flex justify-between items-center mb-2'>
                   <p class='text-sm text-red-500'>Discount</p>
-                  <p class='text-sm text-red-500'>-37$</p>
+                  <p class='text-sm text-red-500'>- {formatCurrency(discount)}</p>
                 </div>
                 <div class='flex justify-between items-center mb-2'>
-                  <p class='text-sm'>Tax</p>
-                  <p class='text-sm'>10$</p>
+                  <p class='text-sm'>Tax (10%)</p>
+                  <p class='text-sm'>{formatCurrency(totalPrice * 0.1)}</p>
                 </div>
                 <div class='flex justify-between items-center mb-4'>
                   <p class='text-sm'>Shipping</p>
-                  <p class='text-sm'>10$</p>
+                  <p class='text-sm'>{formatCurrency(shippingFee + (serviceTypeId === '2' ? 15000 : serviceTypeId === '3' ? 30000 : 0))}</p>
                 </div>
                 <div class='flex justify-between items-center mb-4 border-t pt-2'>
                   <p class='text-lg font-semibold'>Total Price</p>
-                  <p class='text-lg font-semibold'>43$</p>
+                  <p class='text-lg font-semibold'>{formatCurrency(finalTotal)}</p>
                 </div>
-                <button class='w-full bg-black text-white py-2 rounded-lg font-semibold hover:bg-white border border-black hover:text-black transition-all duration-300'>
-                  Pay now (2)
+                <button class='w-full bg-black text-white py-2 rounded-lg font-semibold hover:bg-white border border-black hover:text-black transition-all duration-300' onClick={handleCheckout}>
+                  Pay now ({cartItems.filter(item => item.selected).length === 1 ? '1 item' : `${cartItems.filter(item => item.selected).length} items`})
                 </button>
               </div>
             </div>
@@ -450,7 +559,7 @@ function Checkout() {
                 }
                 onChange={e => {
                   const provinceCode = e.target.value
-                  const provinceName = provinces. find(
+                  const provinceName = provinces.find(
                     p => p.provinceID === provinceCode
                   )?.provinceName
                   setSelectedProvince(provinceName)
@@ -601,7 +710,7 @@ function Checkout() {
                 </button>
                 <button
                   className='flex  items-center bg-black text-white px-4 py-2 rounded hover:bg-white border mb-3 hover:text-black transition-all duration-300'
-                  onClick={handleSaveChanges}
+                  onClick={handleSaveAddressChanges}
                 >
                   Save Change
                 </button>

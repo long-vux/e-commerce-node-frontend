@@ -10,11 +10,13 @@ const AddProduct = ({ open, onClose, onAdd }) => {
   const [product, setProduct] = useState({
     name: "",
     price: 0,
+    weight: 500,
     images: [],
     description: "",
     category: "",
     tags: "",
     variants: [{ size: "", color: "", stock: "" }],
+
   });
 
   const [imageFiles, setImageFiles] = useState([]); // New state to store image files
