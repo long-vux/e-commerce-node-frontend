@@ -286,7 +286,7 @@ const ProductDetail = () => {
             ))}
           </select>
           <button
-            className='bg-blue-500 text-white px-4 py-2 w-full hover:bg-blue-600'
+            className='bg-black text-white px-4 py-2 w-full hover:bg-gray-800'
             onClick={handleAddReview}
           >
             Submit Review

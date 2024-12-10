@@ -5,7 +5,7 @@ import React, {
   useCallback,
   useContext
 } from 'react'
-import useAxios from '../../utils/axiosInstance'
+import axios from 'axios'
 import { UserContext } from '../../contexts/UserContext'
 import logo from '../../assets/images/logo.png'
 import {
@@ -21,7 +21,6 @@ import { Drawer, IconButton } from '@mui/material'
 
 const Header = () => {
   const apiUrl = process.env.REACT_APP_API_URL
-  const axios = useAxios()
   const navigate = useNavigate()
   const [cartItems, setCartItems] = useState([])
   const displayCartItems = cartItems?.slice(0, 4)
@@ -71,24 +70,23 @@ const Header = () => {
       document.removeEventListener('mousedown', handleCloseCart)
     }
   }, [isCartVisible, handleCloseCart])
-
   useEffect(() => {
     const fetchCartItems = async () => {
       try {
-        const response = await axios.get(`${apiUrl}api/cart/get-minicart`)
-        setCartItems(response.data.items)
-      } catch (err) {
-        console.error(err)
+        const response = await axios.get(`${apiUrl}api/cart/get-minicart`, {
+          withCredentials: true
+        });
+        setCartItems(response.data.items || []); // Ensure it's an empty array if no items are fetched
+      } catch (error) {
+        console.error('Failed to fetch cart items:', error);
       }
-    }
-
+    };
+  
     if (user) {
-      fetchCartItems()
-    } else {
-      setCartItems([])
+      fetchCartItems();
     }
-  }, [axios, apiUrl, user])
-
+  }, [apiUrl, user]); // Removed axios dependency
+  
   const handleSearchClick = () => {
     setIsSearchVisible(true)
   }

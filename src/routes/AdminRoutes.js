@@ -6,8 +6,15 @@ import Product from '../Admin/Product'
 import Order from '../Admin/Order'
 import Coupon from '../Admin/Coupon'
 import User from '../Admin/User'
+import { UserContext } from '../contexts/UserContext'
+import { Navigate } from 'react-router-dom'
 
 const AdminRoutes = () => {
+  // admin only
+  const { user } = useContext(UserContext)
+  if (!user || user.role !== 'admin') {
+    return <Navigate to='/login' />
+  }
   return (
     <Routes>
       <Route

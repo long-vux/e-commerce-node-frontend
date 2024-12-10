@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { formatCurrency } from '../../utils/formatCurrency'
 function ProductCard ({ product }) {
   const navigate = useNavigate()
-  const { name, price, images, totalSold, _id } = product
+  const { name, price, images, totalSold, _id, productId } = product
   console.log('product', product)
   const truncateName = name => {
     return name.length > 40 ? name.substring(0, 40) + '...' : name // 2 lines
@@ -13,7 +13,7 @@ function ProductCard ({ product }) {
   const formattedSold = totalSold > 1000 ? totalSold / 1000 + 'k' : totalSold
 
   const handleProdClick = () => {
-    navigate(`/product/${_id}`)
+    navigate(`/product/${productId || _id}`)
   }
   return (
     <div

@@ -693,10 +693,14 @@ function Checkout() {
                       <p>
                         <strong>Receiver Name:</strong> {address.receiverName}
                       </p>
+                      <p>
+                          <strong>Receiver Phone:</strong>{' '}
+                        {address.receiverPhone}
+                      </p>
                       <div className='w-full flex justify-between items-center'>
                         <p>
-                          <strong>Receiver Phone:</strong>{' '}
-                          {address.receiverPhone}
+                          <strong>Receiver Email:</strong>{' '}
+                          {address.receiverEmail}
                         </p>
                         <button
                           className='underline text-blue-600 hover:text-blue-800 cursor-pointer'
@@ -704,6 +708,7 @@ function Checkout() {
                         >
                           delete
                         </button>
+                        
                       </div>
                     </div>
                   </div>
