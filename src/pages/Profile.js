@@ -6,7 +6,6 @@ import {
   EditOutlined,
   AddOutlined,
   DeleteOutlined,
-  LockResetOutlined
 } from '@mui/icons-material'
 import {
   Dialog,

@@ -50,15 +50,12 @@ const EditProduct = ({ open, onClose, onEdit, productToEdit }) => {
   const handleImageDelete = (index) => {
     const imageToDelete = product.images[index];
 
-    // Check if the image is an existing image
     if (existingImages.includes(imageToDelete)) {
       setExistingImages((prev) => prev.filter((img) => img !== imageToDelete));
     } else {
-      // It's a new image; remove it from newImages
       setNewImages((prev) => prev.filter((_, i) => i !== index - existingImages.length));
     }
 
-    // Remove the image from the display
     setProduct((prev) => ({
       ...prev,
       images: prev.images.filter((_, i) => i !== index)
@@ -120,7 +117,6 @@ const EditProduct = ({ open, onClose, onEdit, productToEdit }) => {
     else if (product.category === "") toast.error("Category is required.");
     else if (product.variants.length === 0) toast.error("At least one variant is required.");
     else {
-      // Prepare FormData
       const formData = new FormData();
       formData.append('name', product.name);
       formData.append('price', product.price);
@@ -128,8 +124,7 @@ const EditProduct = ({ open, onClose, onEdit, productToEdit }) => {
       formData.append('category', product.category);
       formData.append('tags', product.tags.join(', '));
       formData.append("variants", JSON.stringify(product.variants));
-
-      // Append existingImages to retain
+      formData.append("weight", product.weight);  
       formData.append('existingImages', JSON.stringify(existingImages));
 
       // Append new images
@@ -169,6 +164,13 @@ const EditProduct = ({ open, onClose, onEdit, productToEdit }) => {
             type="number"
             value={product.price}
             onChange={e => handleChange('price', e.target.value)}
+          />
+          <TextField
+            label="Weight (gram, default 500)"
+            fullWidth
+            type="number"
+            value={product.weight}
+            onChange={e => handleChange('weight', e.target.value)}
           />
           <Box>
             <Typography variant="subtitle1" gutterBottom>

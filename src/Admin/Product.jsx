@@ -4,6 +4,7 @@ import 'react-toastify/dist/ReactToastify.css'
 import ProductsAPI from '../api/ProductsAPI'
 import ProductList from '../components/admin/product/ProductList'
 import AddProduct from '../components/admin/product/AddProduct'
+import { formatCurrency } from '../utils/formatCurrency'  
 
 const Product = () => {
   // useState

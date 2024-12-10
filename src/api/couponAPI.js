@@ -7,6 +7,7 @@ const CouponAPI = {
   createCoupon: async (formData) => {
     const token = localStorage.getItem('token');
     const cleanToken = token.replace(/['"]/g, '');
+    console.log('token', cleanToken)
     try {
       const response = await axios.post(`${BASE_URL}api/coupon/create`, formData, {
         headers: {
@@ -49,8 +50,14 @@ const CouponAPI = {
 
   // Get all coupons (no authorization needed)
   getAllCoupons: async () => {
+    const token = localStorage.getItem('token');
+    const cleanToken = token.replace(/['"]/g, '');
     try {
-      const response = await axios.get(`${BASE_URL}api/coupon/getAll`);
+      const response = await axios.get(`${BASE_URL}api/coupon/getAll`, {
+        headers: {
+          Authorization: `Bearer ${cleanToken}`,
+        },
+      });
       return response.data;
     } catch (error) {
       throw new Error(error.response?.data?.message || "Failed to fetch coupons");

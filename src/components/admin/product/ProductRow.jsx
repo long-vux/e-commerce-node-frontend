@@ -16,6 +16,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ViewProduct from './ViewProduct';
 import EditProduct from './EditProduct';
+import { formatCurrency } from '../../../utils/formatCurrency';
 
 const ProductRow = ({ product, onDelete, onEdit }) => {
   const [openView, setOpenView] = useState(false);
@@ -56,7 +57,7 @@ const ProductRow = ({ product, onDelete, onEdit }) => {
 
         {/* Price */}
         <TableCell>
-          <div style={{ color: 'black' }}>${product.price}</div>
+          <div style={{ color: 'black' }}>{formatCurrency(product.price)}</div>
         </TableCell>
 
         {/* Tags */}
