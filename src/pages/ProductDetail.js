@@ -88,9 +88,6 @@ const ProductDetail = () => {
     }
 
     try {
-      console.log('Selected Variant:', selectedVariant)
-      console.log('Quantity:', quantity)
-
       const response = await axios.post(
         `${process.env.REACT_APP_API_URL}api/cart/add-to-cart`,
         {
