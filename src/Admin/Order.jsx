@@ -21,6 +21,7 @@ import {
   Chip
 } from '@mui/material'
 import { Visibility, Edit, Close } from '@mui/icons-material'
+import OrderAPI from '../api/OrderAPI' // Import your OrderAPI
 
 const Order = () => {
   const [orders, setOrders] = useState([])
@@ -31,49 +32,14 @@ const Order = () => {
   const [selectedOrder, setSelectedOrder] = useState(null)
   const [editedStatus, setEditedStatus] = useState('')
 
-  // Mock API call
   const fetchOrders = async () => {
-    const mockOrders = [
-      {
-        id: 1,
-        user: { id: '123', name: 'John Doe' },
-        items: [
-          {
-            product: { name: 'Product A' },
-            quantity: 2,
-            price: 20,
-            variant: 'Red'
-          },
-          {
-            product: { name: 'Product B' },
-            quantity: 1,
-            price: 50,
-            variant: 'Blue'
-          }
-        ],
-        total: 90,
-        shippingAddress: '123 Main St, Cityville',
-        status: 'pending',
-        createdAt: '2024-12-01'
-      },
-      {
-        id: 2,
-        user: { id: '124', name: 'Jane Smith' },
-        items: [
-          {
-            product: { name: 'Product C' },
-            quantity: 3,
-            price: 30,
-            variant: 'Green'
-          }
-        ],
-        total: 90,
-        shippingAddress: '456 Elm St, Townsville',
-        status: 'confirmed',
-        createdAt: '2024-12-05'
-      }
-    ]
-    setOrders(mockOrders)
+    try {
+      const data = await OrderAPI.getOrdersOfUser()
+      console.log("this is orders: ",data)
+      setOrders(data)
+    } catch (error) {
+      console.error('Error fetching orders:', error)
+    }
   }
 
   useEffect(() => {
@@ -111,15 +77,20 @@ const Order = () => {
     setIsEditOpen(false)
   }
 
-  const saveStatus = () => {
-    setOrders(prevOrders =>
-      prevOrders.map(order =>
-        order.id === selectedOrder.id
-          ? { ...order, status: editedStatus }
-          : order
+  const saveStatus = async () => {
+    try {
+      await OrderAPI.updateOrder(selectedOrder.id, { status: editedStatus })
+      setOrders(prevOrders =>
+        prevOrders.map(order =>
+          order.id === selectedOrder.id
+            ? { ...order, status: editedStatus }
+            : order
+        )
       )
-    )
-    closeEdit()
+      closeEdit()
+    } catch (error) {
+      console.error('Error updating order status:', error)
+    }
   }
 
   const getStatusColor = status => {

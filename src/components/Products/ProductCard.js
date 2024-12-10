@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom'
 function ProductCard ({ product }) {
   const navigate = useNavigate()
   const { name, price, images, totalSold, _id, productId } = product
-  console.log('this is product_____: ', product)
   const truncateName = name => {
     return name.length > 40 ? name.substring(0, 40) + '...' : name // 2 lines
   }
