@@ -8,6 +8,10 @@ import {
   CalendarMonth,
   Logout
 } from '@mui/icons-material'
+import KitchenIcon from '@mui/icons-material/Kitchen';
+import DiscountIcon from '@mui/icons-material/Discount';
+import GroupIcon from '@mui/icons-material/Group';
+import LocalAtmIcon from '@mui/icons-material/LocalAtm';
 import { UserContext } from '../../../contexts/UserContext';
 
 const Sidebar = () => {
@@ -46,7 +50,7 @@ const Sidebar = () => {
               } `
             }
           >
-            <PeopleOutline />
+            <KitchenIcon />
             <span>Product</span>
           </NavLink>
         </li>
@@ -59,7 +63,7 @@ const Sidebar = () => {
               } `
             }
           >
-            <CalendarMonth />
+            <LocalAtmIcon />
             <span>Order</span>
           </NavLink>
         </li>
@@ -72,8 +76,21 @@ const Sidebar = () => {
               } `
             }
           >
-            <KingBed />
+            <DiscountIcon />
             <span>Coupon</span>
+          </NavLink>
+        </li>
+        <li>
+          <NavLink
+            to='/admin/user'
+            className={({ isActive }) =>
+              `hover:bg-[#F5F7F8] flex items-center gap-4 p-2 ${
+                isActive ? activeStyle : inactiveStyle
+              } `
+            }
+          >
+            <GroupIcon />
+            <span>User</span>
           </NavLink>
         </li>
 

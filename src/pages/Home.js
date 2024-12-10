@@ -83,18 +83,18 @@ const Home = () => {
                 alt='men-women'
                 className='w-full h-full object-cover'
               />
-              <h1 className='text-center font-black text-[40px] md:text-[60px] lg:text-[80px] italic font-semibold absolute top-[50%] left-[25%] lg:left-[23%] translate-x-[-50%] translate-y-[-50%] text-white z-10'>
+              <a   className='text-center font-black text-[40px] md:text-[60px] lg:text-[80px] italic font-semibold absolute top-[50%] left-[25%] lg:left-[23%] translate-x-[-50%] translate-y-[-50%] text-white z-10'>
                 MENS
-              </h1>
-              <h1 className='text-center font-black text-[40px] md:text-[60px] lg:text-[80px] italic font-semibold absolute top-[50%] left-[75%] translate-x-[-50%] translate-y-[-50%] text-white z-10'>
+              </a>
+              <a    className='text-center font-black text-[40px] md:text-[60px] lg:text-[80px] italic font-semibold absolute top-[50%] left-[75%] translate-x-[-50%] translate-y-[-50%] text-white z-10'>
                 WOMENS
-              </h1>
-              <button className='absolute top-[85%] left-[25%] lg:left-[23%] translate-x-[-50%] translate-y-[-50%] text-black z-10 bg-white px-5 md:px-8 lg:px-10 py-2 border-2 border-black italic text-sm md:text-lg lg:text-xl hover:bg-black hover:text-white transition-all bold inline-block hover:scale-110'>
+              </a>
+              <a href='/category/Men' className='absolute top-[85%] left-[25%] lg:left-[23%] translate-x-[-50%] translate-y-[-50%] text-black z-10 bg-white px-5 md:px-8 lg:px-10 py-2 border-2 border-black italic text-sm md:text-lg lg:text-xl hover:bg-black hover:text-white transition-all bold inline-block hover:scale-110'>
                 Shop Now
-              </button>
-              <button className='absolute top-[85%] left-[75%] lg:left-[77%] translate-x-[-50%] translate-y-[-50%] text-black z-10 bg-white px-5 md:px-8 lg:px-10 py-2 border-2 border-black italic text-sm md:text-lg lg:text-xl hover:bg-black hover:text-white transition-all bold inline-block hover:scale-110'>
+              </a>
+              <a href='/category/Woman' className='absolute top-[85%] left-[75%] lg:left-[77%] translate-x-[-50%] translate-y-[-50%] text-black z-10 bg-white px-5 md:px-8 lg:px-10 py-2 border-2 border-black italic text-sm md:text-lg lg:text-xl hover:bg-black hover:text-white transition-all bold inline-block hover:scale-110'>
                 Shop Now
-              </button>
+              </a>
             </div>
           </div>
         </div>

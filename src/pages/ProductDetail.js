@@ -5,7 +5,7 @@ import { useParams } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { formatCurrency } from '../utils/formatCurrency'
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom'
 
 const ProductDetail = () => {
   const axios = useAxios()
@@ -16,7 +16,44 @@ const ProductDetail = () => {
   const [quantity, setQuantity] = useState(1)
   const [error, setError] = useState(null)
   const [previewImage, setPreviewImage] = useState('')
-  const navigate = useNavigate();
+  const navigate = useNavigate()
+  const [reviewText, setReviewText] = useState('')
+  const [rating, setRating] = useState(null)
+  const [reviews, setReviews] = useState([])
+
+  useEffect(() => {
+    // Fetch reviews for the product
+    axios
+      .get(`${process.env.REACT_APP_API_URL}api/review/getReviews/${productId}`)
+      .then(res => {
+        setReviews(res.data)
+      })
+      .catch(err => console.log(err))
+  }, [productId])
+
+  const handleAddReview = async () => {
+    if (!reviewText.trim() || (rating && (rating < 1 || rating > 5))) {
+      toast.error('Please provide a valid review and rating.')
+      return
+    }
+
+    console.log("ProdID: ", productId)
+    
+    try {
+      const response = await axios.post(
+        `${process.env.REACT_APP_API_URL}api/review/${productId}`,
+        { reviewText, rating }
+      )
+      setReviews([...reviews, response.data]) // Update the reviews list
+      setReviewText('') // Clear the form
+      setRating(null)
+      toast.success('Review added successfully!')
+    } catch (error) {
+      console.error('Error adding review:', error)
+      toast.error(error.response?.data?.message || 'Failed to add review')
+    }
+  }
+  // for review
 
   useEffect(() => {
     axios
@@ -44,7 +81,7 @@ const ProductDetail = () => {
       .catch(err => console.log(err))
   }, [product?.category])
 
-  const handleAddToCart = async id => {
+  const handleAddToCart = async (id, isBuyNow = false) => {
     if (!selectedVariant) {
       toast.error('Please select a variant')
       return
@@ -64,12 +101,15 @@ const ProductDetail = () => {
       )
 
       toast.success('Product added to cart')
-      window.location.reload();
       console.log('Updated Cart:', response.data.cart)
 
-      // Update the cart state dynamically (if you're using Redux, Context API, etc.)
-      // Example (using React state):
-      // setCart(response.data.cart);
+      if (isBuyNow) {
+        navigate('/cart')
+      } else {
+        // Optionally refresh cart dynamically if you have state management
+        // setCart(response.data.cart); // Example using React state
+        window.location.reload()
+      }
     } catch (error) {
       console.error('Error adding product to cart:', error)
 
@@ -122,11 +162,11 @@ const ProductDetail = () => {
             <img
               src={previewImage}
               alt={product?.name}
-              className='w-full h-full object-cover' // Full width, fixed height, cover the container
+              className='w-full h-full object-cover' 
             />
           </div>
           <div className='flex mt-2 space-x-2'>
-            {product?.images.slice(1).map((image, index) => (
+            {product?.images.map((image, index) => (
               <img
                 key={index}
                 src={image}
@@ -164,9 +204,6 @@ const ProductDetail = () => {
           </div>
           <div className='text-2xl font-bold mt-2'>
             {formatCurrency(product?.price)}{' '}
-            <span className='text-red-500 line-through'>
-              {formatCurrency(product?.price * 2)}
-            </span>
           </div>
 
           <div className='mt-4'>
@@ -216,7 +253,10 @@ const ProductDetail = () => {
             >
               Add to Cart
             </button>
-            <button className='border px-4 py-2 w-full hover:bg-gray-100'>
+            <button
+              className='border px-4 py-2 w-full hover:bg-gray-100'
+              onClick={() => handleAddToCart(product?._id, true)}
+            >
               Buy Now
             </button>
           </div>
@@ -227,58 +267,64 @@ const ProductDetail = () => {
         </div>
       </div>
       <div className='mt-8'>
-        <h2 className='font-bold text-lg'>Review</h2>
+        <h2 className='font-bold text-lg'>Add Your Review</h2>
         <div className='border p-4 mt-2'>
-          <div className='flex items-center'>
-            <span className='text-yellow-500'>
-              <i className='fas fa-star'></i>
-            </span>
-            <span className='text-yellow-500'>
-              <i className='fas fa-star'></i>
-            </span>
-            <span className='text-yellow-500'>
-              <i className='fas fa-star'></i>
-            </span>
-            <span className='text-yellow-500'>
-              <i className='fas fa-star'></i>
-            </span>
-            <span className='text-yellow-500'>
-              <i className='fas fa-star'></i>
-            </span>
-            <span className='ml-2'>5/5</span>
-          </div>
-          <div className='flex mt-2'>
-            <button className='border px-4 py-2 mr-2'>All</button>
-            <button className='border px-4 py-2 mr-2'>1 star</button>
-            <button className='border px-4 py-2 mr-2'>2 star</button>
-            <button className='border px-4 py-2 mr-2'>3 star</button>
-            <button className='border px-4 py-2 mr-2'>4 star</button>
-            <button className='border px-4 py-2'>5 star</button>
-          </div>
-          <div className='mt-4'>
-            <button className='border px-4 py-2 w-full'>Your review</button>
-          </div>
-          <div className='mt-4'>
-            <p className='font-bold'>Alex</p>
-            <p className='text-sm text-gray-500'>16 days ago</p>
-            <p className='mt-2'>
-              Great jacket, very nice to wear. Keeps the wind out. Just note the
-              size, anyone taller than 6'2" should go for a larger size. The
-              color is also a bit darker than the photo but still close. I love
-              it!
-            </p>
-            <button className='text-blue-500 mt-2'>Reply</button>
-          </div>
-          <div className='mt-4'>
-            <p className='font-bold'>Bob</p>
-            <p className=' text-sm text-gray-500'>1 month ago</p>
-            <p className='mt-2'>
-              The jacket is great and the quality is very good. I ordered one
-              size too big and was able to exchange it. The process was smooth
-              and I'm very satisfied!
-            </p>
-            <button className='text-blue-500 mt-2'>Reply</button>
-          </div>
+          <textarea
+            className='w-full p-2 border mb-2'
+            rows='4'
+            placeholder='Write your review...'
+            value={reviewText}
+            onChange={e => setReviewText(e.target.value)}
+          ></textarea>
+          <select
+            className='border p-2 mb-2'
+            value={rating || ''}
+            onChange={e => setRating(Number(e.target.value))}
+          >
+            <option value=''>Select Rating</option>
+            {[1, 2, 3, 4, 5].map(star => (
+              <option key={star} value={star}>
+                {star} Star{star > 1 && 's'}
+              </option>
+            ))}
+          </select>
+          <button
+            className='bg-blue-500 text-white px-4 py-2 w-full hover:bg-blue-600'
+            onClick={handleAddReview}
+          >
+            Submit Review
+          </button>
+        </div>
+      </div>
+
+      <div className='mt-8'>
+        <h2 className='font-bold text-lg'>Reviews</h2>
+        <div className='border p-4 mt-2'>
+          {reviews.length === 0 ? (
+            <p>No reviews yet. Be the first to review this product!</p>
+          ) : (
+            reviews.map((review, index) => (
+              <div key={index} className='mt-4'>
+                <p className='font-bold'>
+                  {review.user?.firstName || 'Anonymous'}
+                </p>
+                <p className='text-sm text-gray-500'>
+                  {new Date(review.createdAt).toLocaleDateString()}
+                </p>
+                <div className='flex items-center'>
+                  {[...Array(5)].map((_, i) => (
+                    <i
+                      key={i}
+                      className={`fas fa-star ${
+                        i < review.rating ? 'text-yellow-500' : 'text-gray-300'
+                      }`}
+                    ></i>
+                  ))}
+                </div>
+                <p className='mt-2'>{review.reviewText}</p>
+              </div>
+            ))
+          )}
         </div>
       </div>
       <div className='mt-8'>

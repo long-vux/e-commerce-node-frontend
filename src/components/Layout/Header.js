@@ -166,43 +166,47 @@ const Header = () => {
                   className='absolute right-0 bg-black shadow-lg opacity-100 transition-all duration-300 z-50'
                 >
                   <div className='flex justify-around gap-4 p-4 w-[347px] h-full flex-col bg-white transition-all duration-300'>
-                    {displayCartItems?.map(item => (
-                      <div
-                        key={item.id}
-                        className='relative border-b border-gray-300'
-                      >
-                        <div className='flex items-center gap-4 '>
-                          <div className='w-24 h-24'>
-                            {' '}
-                            <img
-                              src={item.image}
-                              alt={item.name}
-                              className='object-cover w-full h-full'
-                            />
+                    {displayCartItems.length > 0 ? (
+                      displayCartItems.map(item => (
+                        <div
+                          key={item.id}
+                          className='relative border-b border-gray-300'
+                        >
+                          <div className='flex items-center gap-4'>
+                            <div className='w-24 h-24'>
+                              <img
+                                src={item.image}
+                                alt={item.name}
+                                className='object-cover w-full h-full'
+                              />
+                            </div>
+                            <div>
+                              <div>{item.name}</div>
+                              <div className='font-bold'>{item.price}$</div>
+                            </div>
                           </div>
+                          <div className='absolute right-2 bottom-2'>
+                            <button>x{item.quantity}</button>
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div>Empty Cart</div>
+                    )}
 
-                          <div>
-                            <div>{item.name}</div>
-                            <div className='font-bold'>{item.price}$</div>
-                          </div>
-                        </div>
-                        <div className='absolute right-2 bottom-2'>
-                          <button>x{item.quantity}</button>
-                        </div>
-                      </div>
-                    ))}
                     <div className='flex justify-between items-center pt-10'>
                       <div className='text-gray-500'>
                         {remainingItemsCount > 0
                           ? `${remainingItemsCount} More Items In Cart`
                           : 'More Details In Cart'}
                       </div>
-                      <Link
-                        to='/cart'
+                      <a
+                        onClick={() => handleCloseCart}
+                        href='/cart'
                         className='bg-black text-white p-2 rounded-md'
                       >
                         View Cart
-                      </Link>
+                      </a>
                     </div>
                   </div>
                 </div>
@@ -236,7 +240,7 @@ const Header = () => {
             <CloseIcon />
           </IconButton>
           <nav className='mt-4'>
-            <ul className='flex flex flex-col gap-4 text-lg font-bold'>
+            <ul className='flex flex-col gap-4 text-lg font-bold'>
               {categories?.map(category => (
                 <li key={category}>
                   <Link

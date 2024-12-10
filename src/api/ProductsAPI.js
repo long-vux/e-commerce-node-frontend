@@ -5,9 +5,9 @@ const BASE_URL = process.env.REACT_APP_API_URL;
 
 const ProductsAPI = {
   // Search products (no authorization needed)
-  searchProducts: async (query) => {
+  searchProducts: async (name) => {
     try {
-      const response = await axios.get(`${BASE_URL}api/product/search`, { params: { query } });
+      const response = await axios.get(`${BASE_URL}api/product/search/`, { params: { name } });
       return response.data;
     } catch (error) {
       throw new Error(error.response?.data?.message || "Failed to search products");

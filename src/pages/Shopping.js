@@ -36,24 +36,28 @@ const Shopping = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        setLoading(true)
-        const response = await ProductsAPI.getAllProducts()
+        setLoading(true);
+        const response = await ProductsAPI.getAllProducts();
         if (response.success) {
-          setProducts(response.data || []) // Default to an empty array
-          console.log('Fetched products: ', response.data)
+          const allProducts = response.data || [];
+          const filteredProducts = category
+            ? allProducts.filter(product => product.category === category)
+            : [];
+          setProducts(filteredProducts);
+          console.log('Filtered products: ', filteredProducts);
         } else {
-          setError('Failed to fetch products.')
+          setError('Failed to fetch products.');
         }
       } catch (err) {
-        setError(err.message || 'Failed to load products.')
+        setError(err.message || 'Failed to load products.');
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
-
-    fetchProducts()
-  }, [])
-
+    };
+  
+    fetchProducts();
+  }, [category]);
+  
   // Extract unique tags from products
   const uniqueTags = Array.from(
     new Set(products.flatMap(product => product.tags || []))

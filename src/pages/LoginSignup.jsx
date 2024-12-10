@@ -40,13 +40,13 @@ const LoginSignup = () => {
       navigate('/')
     } catch (error) {
       console.log('error', error)
-      toast.error('Login failed')
+      toast.error(error.response.data.message)
     }
   }
 
   const handleGoogleLoginFailure = error => {
     console.log(error)
-    toast.error('Login failed')
+    toast.error(error.response.data.message)
   }
 
   const handleSubmit = async e => {
