@@ -1,6 +1,7 @@
 import React from "react";
 import { Dialog, DialogTitle, DialogContent, Typography, Box, Chip, Stack, Grid, Avatar, Divider, IconButton } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
+import { formatCurrency } from '../../../utils/formatCurrency';
 
 const ViewProduct = ({ open, close, product }) => {
   if (!product) return null;
@@ -49,8 +50,8 @@ const ViewProduct = ({ open, close, product }) => {
               color="text.secondary"
               textAlign="center"
             >
-              ${price?.toFixed(2) || '0.00'}
-            </Typography>
+              {formatCurrency(price)}
+            </Typography> 
           </Box>
 
           {/* Description */}

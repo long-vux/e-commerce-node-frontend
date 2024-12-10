@@ -42,9 +42,11 @@ const CouponManagement = () => {
   const fetchCoupons = async () => {
     try {
       const response = await CouponAPI.getAllCoupons()
+      console.log('response', response)
       setCoupons(response)
     } catch (error) {
       console.error('Error fetching coupons:', error.message)
+      toast.error('Error fetching coupons:', error.message)
     }
   }
 
@@ -54,6 +56,16 @@ const CouponManagement = () => {
 
   const handleAddCoupon = async () => {
     try {
+      if (newCoupon.expiryDate < new Date()) {
+        toast.error('Expiry date must be greater than current date')
+        return
+      }
+
+      if (newCoupon.discountPercentage < 0 || newCoupon.discountPercentage > 100) {
+        toast.error('Discount percentage must be between 0 and 100')
+        return
+      }
+
       // Gọi API để thêm coupon mới
       const addedCoupon = await CouponAPI.createCoupon(newCoupon)
 
@@ -68,20 +80,34 @@ const CouponManagement = () => {
         discountPercentage: '',
         maxUsage: '',
         usageCount: 0,
-        isActive: true,
-        expiryDate: ''
+        expiryDate: new Date().toISOString().split('T')[0]
       })
     } catch (error) {
-      console.error('Error adding coupon:', error.message)
+      toast.error(error.message)
     }
   }
 
   const handleEditCoupon = async () => {
     try {
       console.log('Editing coupon:', editCoupon) // Debugging
+      if (editCoupon.expiryDate < new Date()) {
+        toast.error('Expiry date must be greater than current date')
+        return
+      }
+
+      if (editCoupon.discountPercentage < 0 || editCoupon.discountPercentage > 100) {
+        toast.error('Discount percentage must be between 0 and 100')
+        return
+      }
+
+      const formData = new FormData();
+      formData.append('code', editCoupon.code);
+      formData.append('discountPercentage', editCoupon.discountPercentage);
+      formData.append('maxUsage', editCoupon.maxUsage);
+      formData.append('expiryDate', editCoupon.expiryDate);
       const updatedCoupon = await CouponAPI.updateCoupon(
         editCoupon._id,
-        editCoupon
+        formData
       )
       console.log('Response from server:', updatedCoupon) // Debugging
       toast.success('Coupon updated successfully!')
@@ -95,8 +121,7 @@ const CouponManagement = () => {
       setIsEditModalOpen(false)
       setEditCoupon(null)
     } catch (error) {
-      console.error('Error updating coupon:', error.message)
-      alert('Failed to update coupon. Please try again.')
+      toast.error(error.message)
     }
   }
 
@@ -177,7 +202,7 @@ const CouponManagement = () => {
                 <strong>Code</strong>
               </TableCell>
               <TableCell>
-                <strong>Discount (%)</strong>
+                <strong>Discount</strong>
               </TableCell>
               <TableCell>
                 <strong>Max Usage</strong>
@@ -201,8 +226,8 @@ const CouponManagement = () => {
               .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
               .map(coupon => (
                 <TableRow key={coupon.id}>
-                  <TableCell>{coupon.code}</TableCell>
-                  <TableCell>{coupon.discountPercentage}</TableCell>
+                  <TableCell >#{coupon.code}</TableCell>
+                  <TableCell>{coupon.discountPercentage} %</TableCell>
                   <TableCell>{coupon.maxUsage}</TableCell>
                   <TableCell>{coupon.usageCount}</TableCell>
                   <TableCell>{coupon.isActive ? 'Yes' : 'No'}</TableCell>

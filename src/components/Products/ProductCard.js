@@ -1,9 +1,10 @@
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-
+import { formatCurrency } from '../../utils/formatCurrency'
 function ProductCard ({ product }) {
   const navigate = useNavigate()
-  const { name, price, images, totalSold, _id, productId } = product
+  const { name, price, images, totalSold, _id } = product
+  console.log('product', product)
   const truncateName = name => {
     return name.length > 40 ? name.substring(0, 40) + '...' : name // 2 lines
   }
@@ -11,16 +12,13 @@ function ProductCard ({ product }) {
   // convert sold to k if it is greater than 1000
   const formattedSold = totalSold > 1000 ? totalSold / 1000 + 'k' : totalSold
 
-  const handleProdClick = (_id, productId) => {
-    if (_id) {
-      navigate(`/product/${_id}`)
-    }
-    navigate(`/product/${productId}`)
+  const handleProdClick = () => {
+    navigate(`/product/${_id}`)
   }
   return (
     <div
       className='relative p-4 rounded-2xl bg-white shadow-lg hover:scale-105 transition-all duration-300 '
-      onClick={() => handleProdClick(_id, productId)}
+      onClick={() => handleProdClick()}
     >
       <img
         src={images[0]}
@@ -33,7 +31,7 @@ function ProductCard ({ product }) {
         </h3>
         <div className='flex flex-row justify-between items-center gap-2 w-full'>
           <p className='text-[14px] '>sold {formattedSold} </p>
-          <p className='text-[20px] text-red-500 font-semibold'>{price}$</p>
+          <p className='text-[20px] text-red-500 font-semibold'>{formatCurrency(price)}</p>
         </div>
       </div>
     </div>

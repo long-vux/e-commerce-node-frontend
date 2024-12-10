@@ -17,34 +17,68 @@ import {
   DialogActions,
   Typography,
   IconButton,
+
   Box,
-  Chip
+  Chip  
 } from '@mui/material'
-import { Visibility, Edit, Close } from '@mui/icons-material'
-import OrderAPI from '../api/OrderAPI' // Import your OrderAPI
+import { Visibility, Edit, Close, Delete, CheckBox } from '@mui/icons-material'
+import axios from 'axios'
+import { toast } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
+import { formatCurrency } from '../utils/formatCurrency'
 
 const Order = () => {
   const [orders, setOrders] = useState([])
   const [page, setPage] = useState(0)
   const [rowsPerPage, setRowsPerPage] = useState(5)
   const [isDetailsOpen, setIsDetailsOpen] = useState(false)
-  const [isEditOpen, setIsEditOpen] = useState(false)
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false)
   const [selectedOrder, setSelectedOrder] = useState(null)
   const [editedStatus, setEditedStatus] = useState('')
+  const [isUpdateStatus, setIsUpdateStatus] = useState(false)
+  const BASE_URL = process.env.REACT_APP_API_URL;
+  const [currentStatus, setCurrentStatus] = useState('')
+
+  const token = localStorage.getItem('token')
+  const cleanToken = token.replace(/['"]/g, '')
+
+  const [isLoading, setIsLoading] = useState(false)
 
   const fetchOrders = async () => {
     try {
-      const data = await OrderAPI.getOrdersOfUser()
-      console.log("this is orders: ",data)
-      setOrders(data)
+      const response = await axios.get(`${BASE_URL}api/admin/get-all-orders`, {
+        headers: {
+          Authorization: `Bearer ${cleanToken}`
+        }
+      })
+      setOrders(response.data.data)
+      console.log('response.data.data', response.data.data[0])
+      setCurrentStatus(response.data.data[0].status)
+      setEditedStatus(response.data.data[0].status)
     } catch (error) {
-      console.error('Error fetching orders:', error)
+      console.error("Error fetching orders:", error)
     }
   }
 
   useEffect(() => {
-    fetchOrders()
+    fetchOrders() // Gọi API khi component mount
   }, [])
+
+  const handleChangeStatus = (e) => {
+    const newStatus = e.target.value;
+    console.log('e.target.value', newStatus);
+    console.log('currentStatus', currentStatus);
+  
+    setEditedStatus(newStatus);
+  
+    // Compare the new status (e.target.value) with currentStatus
+    if (newStatus !== currentStatus) {
+      setIsUpdateStatus(true);
+    } else {
+      setIsUpdateStatus(false);
+    }
+  };
+  
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage)
@@ -65,31 +99,52 @@ const Order = () => {
     setIsDetailsOpen(false)
   }
 
-  const openEdit = order => {
+  const openDelete = order => {
     setSelectedOrder(order)
-    setEditedStatus(order.status)
-    setIsEditOpen(true)
+    setIsDeleteOpen(true)
   }
 
-  const closeEdit = () => {
+  const closeDelete = () => {
     setSelectedOrder(null)
-    setEditedStatus('')
-    setIsEditOpen(false)
+    setIsDeleteOpen(false)
   }
 
-  const saveStatus = async () => {
+  const handleDelete = async (orderId) => {
     try {
-      await OrderAPI.updateOrder(selectedOrder.id, { status: editedStatus })
-      setOrders(prevOrders =>
-        prevOrders.map(order =>
-          order.id === selectedOrder.id
-            ? { ...order, status: editedStatus }
-            : order
-        )
-      )
-      closeEdit()
+      const response = await axios.delete(`${BASE_URL}api/order/${orderId}`, {
+        headers: {
+          Authorization: `Bearer ${cleanToken}`
+        }
+      })
+      if (response.status === 200) {
+        toast.success('Order deleted successfully')
+        fetchOrders()
+        closeDelete()
+      } else {
+        toast.error('Failed to delete order')
+      }
     } catch (error) {
-      console.error('Error updating order status:', error)
+      console.error("Error deleting order:", error)
+    }
+  }
+
+  const handleUpdateStatus = async (orderId) => {
+    try {
+      const response = await axios.put(`${BASE_URL}api/order/${orderId}`, { status: editedStatus }, {
+        headers: {
+          Authorization: `Bearer ${cleanToken}`
+        }
+      })
+      console.log('response', response)
+      if (response.status === 200) {
+        toast.success('Order status updated successfully')
+        fetchOrders()
+        setIsUpdateStatus(false)
+      } else {
+        toast.error('Failed to update order status')
+      }
+    } catch (error) {
+      console.error("Error updating order status:", error)
     }
   }
 
@@ -127,10 +182,7 @@ const Order = () => {
                 <strong>User</strong>
               </TableCell>
               <TableCell>
-                <strong>Total ($)</strong>
-              </TableCell>
-              <TableCell>
-                <strong>Shipping Address</strong>
+                <strong>Total</strong>
               </TableCell>
               <TableCell>
                 <strong>Status</strong>
@@ -147,17 +199,22 @@ const Order = () => {
             {orders
               .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
               .map(order => (
-                <TableRow key={order.id}>
-                  <TableCell>{order.id}</TableCell>
-                  <TableCell>{order.user.name}</TableCell>
-                  <TableCell>${order.total}</TableCell>
-                  <TableCell>{order.shippingAddress}</TableCell>
+                <TableRow key={order.user._id}>
+                  <TableCell>{order.user._id}</TableCell>
+                  <TableCell>{order.user.email}</TableCell>
+                  <TableCell>{formatCurrency(order.total)}</TableCell>
                   <TableCell>
-                    <Chip
-                      label={order.status}
-                      color={getStatusColor(order.status)}
-                      sx={{ textTransform: 'capitalize' }}
-                    />
+                    <Select
+                      value={editedStatus}
+                      onChange={handleChangeStatus}
+                      fullWidth
+                    >
+                      <MenuItem value='pending'>Pending</MenuItem>
+                      <MenuItem value='confirmed'>Confirmed</MenuItem>
+                      <MenuItem value='shipped'>Shipped</MenuItem>
+                      <MenuItem value='delivered'>Delivered</MenuItem>
+                      <MenuItem value='cancelled'>Cancelled</MenuItem>
+                    </Select>
                   </TableCell>
                   <TableCell>
                     {new Date(order.createdAt).toLocaleDateString()}
@@ -169,9 +226,14 @@ const Order = () => {
                     >
                       <Visibility />
                     </IconButton>
-                    <IconButton onClick={() => openEdit(order)} color='default'>
-                      <Edit />
+                    <IconButton onClick={() => openDelete(order)} color='default'>
+                      <Delete />
                     </IconButton>
+                    {isUpdateStatus && (
+                      <IconButton onClick={() => handleUpdateStatus(order._id)} color='error'>
+                        <CheckBox />
+                      </IconButton>
+                    )}
                   </TableCell>
                 </TableRow>
               ))}
@@ -195,8 +257,8 @@ const Order = () => {
             sx={{
               display: 'flex',
               justifyContent: 'space-between',
-              alignItems: 'center', 
-              fontWeight:' bold'
+              alignItems: 'center',
+              fontWeight: 'bold'
             }}
           >
             Order Details
@@ -209,13 +271,19 @@ const Order = () => {
           </DialogTitle>
           <DialogContent sx={{ padding: 3 }}>
             <Typography variant='body1' color='textSecondary' gutterBottom>
-              Customer: {selectedOrder.user.name}
+              Name: {selectedOrder.user.name}
+            </Typography>
+            <Typography variant='body1' color='textSecondary' gutterBottom>
+              Email: {selectedOrder.user.email}
+            </Typography>
+            <Typography variant='body1' color='textSecondary' gutterBottom>
+              Phone: {selectedOrder.user.phone}
             </Typography>
             <Typography variant='body1' color='textSecondary' gutterBottom>
               Shipping Address: {selectedOrder.shippingAddress}
             </Typography>
             <Typography variant='body1' color='textSecondary' gutterBottom>
-              Total: <strong>${selectedOrder.total}</strong>
+              Total: <strong>{formatCurrency(selectedOrder.total)}</strong>
             </Typography>
 
             <Typography variant='h6' gutterBottom sx={{ marginTop: 2 }}>
@@ -224,6 +292,7 @@ const Order = () => {
             <Table size='small'>
               <TableHead>
                 <TableRow>
+
                   <TableCell>
                     <strong>Product</strong>
                   </TableCell>
@@ -234,7 +303,7 @@ const Order = () => {
                     <strong>Quantity</strong>
                   </TableCell>
                   <TableCell>
-                    <strong>Price ($)</strong>
+                    <strong>Price</strong>
                   </TableCell>
                 </TableRow>
               </TableHead>
@@ -244,7 +313,7 @@ const Order = () => {
                     <TableCell>{item.product.name}</TableCell>
                     <TableCell>{item.variant}</TableCell>
                     <TableCell>{item.quantity}</TableCell>
-                    <TableCell>${item.price}</TableCell>
+                    <TableCell>{formatCurrency(item.price)}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -272,30 +341,19 @@ const Order = () => {
 
       {/* Edit Status Dialog */}
       {selectedOrder && (
-        <Dialog open={isEditOpen} onClose={closeEdit}>
-          <DialogTitle>Edit Order Status</DialogTitle>
+        <Dialog open={isDeleteOpen} onClose={closeDelete}>
+          <DialogTitle>Delete Order</DialogTitle>
           <DialogContent>
             <Typography variant='body1' gutterBottom>
-              Update status for Order ID: {selectedOrder.id}
+              Are you sure you want to delete this order?
             </Typography>
-            <Select
-              value={editedStatus}
-              onChange={e => setEditedStatus(e.target.value)}
-              fullWidth
-            >
-              <MenuItem value='pending'>Pending</MenuItem>
-              <MenuItem value='confirmed'>Confirmed</MenuItem>
-              <MenuItem value='shipped'>Shipped</MenuItem>
-              <MenuItem value='delivered'>Delivered</MenuItem>
-              <MenuItem value='cancelled'>Cancelled</MenuItem>
-            </Select>
           </DialogContent>
           <DialogActions>
-            <Button onClick={closeEdit} color='default'>
+            <Button onClick={closeDelete} color='default'>
               Cancel
             </Button>
             <Button
-              onClick={saveStatus}
+              onClick={() => handleDelete(selectedOrder._id)}
               sx={{
                 backgroundColor: 'black',
                 color: 'white',
@@ -307,7 +365,7 @@ const Order = () => {
                 transition: 'all 0.3s'
               }}
             >
-              Save
+              Delete
             </Button>
           </DialogActions>
         </Dialog>

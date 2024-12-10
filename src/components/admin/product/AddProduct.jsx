@@ -10,11 +10,13 @@ const AddProduct = ({ open, onClose, onAdd }) => {
   const [product, setProduct] = useState({
     name: "",
     price: 0,
+    weight: 500,
     images: [],
     description: "",
     category: "",
     tags: "",
     variants: [{ size: "", color: "", stock: "" }],
+
   });
 
   const [imageFiles, setImageFiles] = useState([]); // New state to store image files
@@ -120,7 +122,8 @@ const AddProduct = ({ open, onClose, onAdd }) => {
         formData.append("description", product.description);
         formData.append("category", product.category);
         formData.append("tags", product.tags);
-          formData.append("variants", JSON.stringify(product.variants));
+        formData.append("variants", JSON.stringify(product.variants));
+        formData.append("weight", product.weight);
 
         imageFiles.forEach((file) => {
           formData.append("images", file);
@@ -170,6 +173,13 @@ const AddProduct = ({ open, onClose, onAdd }) => {
             type="number"
             value={product.price}
             onChange={(e) => handleChange("price", e.target.value)}
+          />
+          <TextField
+            label="Weight (gram, default 500)"
+            fullWidth
+            type="number"
+            value={product.weight}
+            onChange={(e) => handleChange("weight", e.target.value)}
           />
           <Box>
             <Typography variant="subtitle1" gutterBottom>
