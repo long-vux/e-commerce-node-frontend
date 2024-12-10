@@ -42,7 +42,6 @@ const CouponManagement = () => {
   const fetchCoupons = async () => {
     try {
       const response = await CouponAPI.getAllCoupons()
-      console.log('response', response)
       setCoupons(response)
     } catch (error) {
       console.error('Error fetching coupons:', error.message)

@@ -84,6 +84,7 @@ function Checkout() {
   const [selectedDistrict, setSelectedDistrict] = useState('')
   const [selectedWard, setSelectedWard] = useState('')
   const [street, setStreet] = useState('')
+  const [receiverEmail, setReceiverEmail] = useState('')
   const [receiverName, setReceiverName] = useState('')
   const [receiverPhone, setReceiverPhone] = useState(user?.phone || '')
   const [districtId, setDistrictId] = useState('')
@@ -93,43 +94,40 @@ function Checkout() {
   const [serviceTypeId, setServiceTypeId] = useState(1) //1: Express, 2: Standard, 3: Saving
   const [coupons, setCoupons] = useState([])
   const [selectedCoupon, setSelectedCoupon] = useState(null)
-
   const [totalPrice, setTotalPrice] = useState(0)
-
 
   useEffect(() => {
     const loadCartData = async () => {
       try {
-        if (user) {
-          const items = await fetchCartItems();
-  
-          // Calculate total weight
-          const totalWeight = items.reduce(
-            (total, item) => total + item.weight * item.quantity,
-            0
-          );
-          setTotalWeight(totalWeight);
-          fetchAddresses(totalWeight);
-  
-          const totalPrice = items.reduce((total, item) => total + item.price, 0);
-          setTotalPrice(totalPrice);
-  
-          calculateFinalTotal(totalPrice);
-  
-          fetchCoupons();
-        }
+        const items = await fetchCartItems();
+
+        // Calculate total weight
+        const totalWeight = items.reduce(
+          (total, item) => total + item.weight * item.quantity,
+          0
+        );
+        setTotalWeight(totalWeight);
+        fetchAddresses(totalWeight);
+
+        const totalPrice = items.reduce((total, item) => total + item.price, 0);
+        setTotalPrice(totalPrice);
+
+        calculateFinalTotal(totalPrice);
+
+        fetchCoupons();
+
       } catch (error) {
         console.error('Error loading cart data:', error);
       }
     };
-  
+
     loadCartData();
   }, [user]);
-  
+
   useEffect(() => {
     calculateFinalTotal(totalPrice);
   }, [selectedCoupon, serviceTypeId, totalPrice, shippingFee, discount]);
-  
+
   // ========================================================
   //                      Fetch Cart Items
   // ========================================================
@@ -140,14 +138,13 @@ function Checkout() {
       });
       const cartItems = response.data.items;
       setCartItems(cartItems);
-      console.log('cartItems', cartItems);
       return cartItems;
     } catch (err) {
       console.error(err);
       return [];
     }
   };
-  
+
   // ========================================================
   //                        Coupons
   // ========================================================
@@ -161,30 +158,30 @@ function Checkout() {
       console.error(err);
     }
   };
-  
+
   const handleCouponChange = (e) => {
     const couponId = e.target.value;
     setSelectedCoupon(couponId);
-  
+
     const coupon = coupons.find((c) => c._id === couponId);
     const discount = coupon ? (coupon.discountPercentage * totalPrice) / 100 : 0;
     setDiscount(discount);
   };
-  
+
   const handleServiceTypeChange = (e) => {
     setServiceTypeId(e.target.value);
   };
-  
+
   // ========================================================
   //                Calculate Final Total
   // ========================================================
   const calculateFinalTotal = (totalPrice) => {
     let discountedTotal = totalPrice;
-  
+
     if (discount) {
       discountedTotal -= discount;
     }
-  
+
     switch (serviceTypeId) {
       case '3': // Express
         discountedTotal += 30000 + shippingFee + totalPrice * 0.1;
@@ -196,10 +193,10 @@ function Checkout() {
         discountedTotal += shippingFee + totalPrice * 0.1;
         break;
     }
-  
+
     setFinalTotal(discountedTotal);
   };
-  
+
   // ========================================================
   //                             Address
   // ========================================================
@@ -244,7 +241,8 @@ function Checkout() {
         !selectedWard ||
         !street ||
         !receiverName ||
-        !receiverPhone
+        !receiverPhone ||
+        !receiverEmail
       ) {
         toast.error('Please fill in all required fields')
         return
@@ -260,6 +258,7 @@ function Checkout() {
             street,
             receiverName,
             receiverPhone,
+            receiverEmail,
             districtId
           }
         )
@@ -274,12 +273,14 @@ function Checkout() {
             street,
             receiverName,
             receiverPhone,
+            receiverEmail,
             districtId
           }
         )
         toast.success('Address added successfully')
       }
       handleAddingState()
+      window.location.reload()
       fetchAddresses()
     } catch (error) {
       toast.error(error.response?.data?.message || 'An error occurred')
@@ -293,6 +294,7 @@ function Checkout() {
       )
       toast.success('Address deleted successfully')
       fetchAddresses()
+      fetchShippingFee(chosenAddress.districtId, totalWeight)
     } catch (error) {
       toast.error(error.response?.data?.message || 'An error occurred')
     }
@@ -303,6 +305,7 @@ function Checkout() {
     setCurrentAddressId(address._id)
     setReceiverName(address.receiverName)
     setReceiverPhone(address.receiverPhone)
+    setReceiverEmail(address.receiverEmail)
     setSelectedProvince(address.province)
     setSelectedDistrict(address.district)
     setSelectedWard(address.ward)
@@ -314,6 +317,7 @@ function Checkout() {
     setIsEditMode(false)
     setReceiverName('')
     setReceiverPhone(user?.phone || '')
+    setReceiverEmail('')
     setSelectedProvince('')
     setSelectedDistrict('')
     setSelectedWard('')
@@ -326,6 +330,7 @@ function Checkout() {
     setCurrentAddressId(null)
     setReceiverName('')
     setReceiverPhone(user?.phone || '')
+    setReceiverEmail('')
     setSelectedProvince('')
     setSelectedDistrict('')
     setSelectedWard('')
@@ -362,21 +367,23 @@ function Checkout() {
 
   const handleCheckout = async () => {
     try {
-      const { firstName, lastName, email  } = user;
+      if (!chosenAddress) {
+        toast.error('Please select an address.')
+        return
+      }
+      // authenticate user
       const address = `${chosenAddress.street}, ${chosenAddress.ward}, ${chosenAddress.district}, ${chosenAddress.province}`;
-      
+
       const selectedItems = cartItems.map(item => ({
         productId: item._id,
         variant: item.variant
       }));
 
       const payload = {
-        firstName,
-        lastName,
-        email,
-        address,
-        receiverPhone: chosenAddress.receiverPhone,
         receiverName: chosenAddress.receiverName,
+        receiverEmail: chosenAddress.receiverEmail,
+        receiverPhone: chosenAddress.receiverPhone,
+        address,
         selectedItems,
         total: finalTotal,
         discount,
@@ -384,12 +391,12 @@ function Checkout() {
         tax: totalPrice * 0.1,
 
       };
-  
+
       // Send the checkout request
       const response = await axios.post(`${apiUrl}api/cart/checkout`, payload, {
         withCredentials: true
       });
-  
+
       // Handle successful response
       console.log('Checkout successful', response.data);
       toast.success('Checkout successful!');
@@ -397,10 +404,10 @@ function Checkout() {
     } catch (error) {
       // Handle errors
       console.error('Error during checkout:', error);
-      toast.error('Checkout failed. Please try again.');
+      toast.error(error.response?.data?.message || 'An error occurred');
     }
   };
-  
+
   return (
     <div class='flex justify-center items-center min-h-screen'>
       <div class='bg-white p-8 rounded-lg shadow-lg w-full max-w-4xl'>
@@ -429,8 +436,8 @@ function Checkout() {
                   </p>
                   <p className='w-full flex justify-between'>
                     <div>
-                      <strong>Receiver Phone:</strong>{' '}
-                      {chosenAddress.receiverPhone}
+                      <strong>Receiver Email:</strong>{' '}
+                      {chosenAddress.receiverEmail}
                     </div>
                     <a
                       className='underline cursor-pointer'
@@ -550,6 +557,13 @@ function Checkout() {
                 label='Receiver Phone'
                 value={receiverPhone}
                 onChange={e => setReceiverPhone(e.target.value)}
+                fullWidth
+                margin='normal'
+              />
+              <TextField
+                label='Receiver Email'
+                value={receiverEmail}
+                onChange={e => setReceiverEmail(e.target.value)}
                 fullWidth
                 margin='normal'
               />

@@ -42,8 +42,6 @@ const Order = () => {
   const token = localStorage.getItem('token')
   const cleanToken = token.replace(/['"]/g, '')
 
-  const [isLoading, setIsLoading] = useState(false)
-
   const fetchOrders = async () => {
     try {
       const response = await axios.get(`${BASE_URL}api/admin/get-all-orders`, {

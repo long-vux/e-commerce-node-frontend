@@ -51,9 +51,6 @@ const ProductDetail = () => {
     }
 
     try {
-      console.log('Selected Variant:', selectedVariant)
-      console.log('Quantity:', quantity)
-
       const response = await axios.post(
         `${process.env.REACT_APP_API_URL}api/cart/add-to-cart`,
         {
@@ -65,11 +62,6 @@ const ProductDetail = () => {
 
       toast.success('Product added to cart')
       window.location.reload();
-      console.log('Updated Cart:', response.data.cart)
-
-      // Update the cart state dynamically (if you're using Redux, Context API, etc.)
-      // Example (using React state):
-      // setCart(response.data.cart);
     } catch (error) {
       console.error('Error adding product to cart:', error)
 
