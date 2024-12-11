@@ -30,6 +30,7 @@ const Cart = () => {
       const response = await axios.get(`${apiUrl}api/cart/get-cart`, {
         withCredentials: true
       })
+      console.log(response.data)
       const cartItems = response.data.cart.items
       const total = cartItems.reduce(
         (total, item) => (item.selected ? total + item.price : total),

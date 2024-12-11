@@ -20,7 +20,6 @@ const HistoryPurchase = () => {
     try {
       const response = await axios.get('/api/order/get-orders-of-user')
       setOrders(response.data)
-      console.log(response.data)
     } catch (error) {
       console.log(error)
     }
@@ -79,9 +78,8 @@ const HistoryPurchase = () => {
               <table className='w-full border-collapse'>
                 <thead>
                   <tr>
-                    <th className='border p-2'>Product Image</th>
-                    <th className='border p-2'>Product Name</th>
-                    <th className='border p-2'>Price x Quantity</th>
+                    <th className='border p-2'>Receiver Name</th>
+                    <th className='border p-2'>Receiver Email</th>
                     <th className='border p-2'>Order Total</th>
                     <th className='border p-2'>Shipping Address</th>
                     <th className='border p-2'>Status</th>
@@ -92,17 +90,10 @@ const HistoryPurchase = () => {
                   {orders.map(order => (
                     <tr key={order._id} className='border' onClick={() => viewOrderDetails(order._id)} style={{ cursor: 'pointer' }}>
                       <td className='border p-2'>
-                        <img
-                          src={order.items[0].product.image}
-                          alt={order.items[0].product.name}
-                          className='w-20 h-20 object-cover'
-                        />
+                        {order.receiverName}
                       </td>
                       <td className='border p-2'>
-                        {order.items[0].product.name}
-                      </td>
-                      <td className='border p-2'>
-                        {formatCurrency(order.items[0].product.price)} x {order.items[0].quantity}
+                        {order.receiverEmail}
                       </td>
                       <td className='border p-2'>{formatCurrency(order.total)}</td>
                       <td className='border p-2'>{order.shippingAddress}</td>

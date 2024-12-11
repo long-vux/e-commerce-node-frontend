@@ -389,7 +389,6 @@ function Checkout() {
         discount,
         shippingFee,
         tax: totalPrice * 0.1,
-
       };
 
       // Send the checkout request

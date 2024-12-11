@@ -48,6 +48,7 @@ const Profile = () => {
   const [street, setStreet] = useState('')
   const [receiverName, setReceiverName] = useState('')
   const [receiverPhone, setReceiverPhone] = useState(user?.phone || '')
+  const [receiverEmail, setReceiverEmail] = useState(user?.email || '')
   const [districtId, setDistrictId] = useState(null) // for GHN
   const [error, setError] = useState('')
 
@@ -98,6 +99,7 @@ const Profile = () => {
       formData.append('firstName', editedUser.firstName)
       formData.append('lastName', editedUser.lastName)
       formData.append('phone', editedUser.phone)
+      formData.append('email', editedUser.email)
       if (file) {
         formData.append('image', file)
       }
@@ -129,7 +131,8 @@ const Profile = () => {
         !selectedWard ||
         !street ||
         !receiverName ||
-        !receiverPhone
+        !receiverPhone || 
+        !receiverEmail
       ) {
         toast.error('Please fill in all required fields')
         return
@@ -145,6 +148,7 @@ const Profile = () => {
             street,
             receiverName,
             receiverPhone,
+            receiverEmail,
             districtId
           }
         )
@@ -159,6 +163,7 @@ const Profile = () => {
             street,
             receiverName,
             receiverPhone,
+            receiverEmail,
             districtId
           }
         )
@@ -190,6 +195,7 @@ const Profile = () => {
     setCurrentAddressId(address._id)
     setReceiverName(address.receiverName)
     setReceiverPhone(address.receiverPhone)
+    setReceiverEmail(address.receiverEmail)
     setSelectedProvince(address.province)
     setSelectedDistrict(address.district)
     setSelectedWard(address.ward)
@@ -202,6 +208,7 @@ const Profile = () => {
     setIsEditMode(false)
     setReceiverName('')
     setReceiverPhone(user?.phone || '')
+    setReceiverEmail(user?.email || '')
     setSelectedProvince('')
     setSelectedDistrict('')
     setSelectedWard('')
@@ -215,6 +222,7 @@ const Profile = () => {
     setCurrentAddressId(null)
     setReceiverName('')
     setReceiverPhone(user?.phone || '')
+    setReceiverEmail(user?.email || '')
     setDistrictId(null)
     setSelectedProvince('')
     setSelectedDistrict('')
@@ -354,6 +362,9 @@ const Profile = () => {
                   <p>
                     <strong>Receiver Phone:</strong> {address.receiverPhone}
                   </p>
+                  <p>
+                    <strong>Receiver Email:</strong> {address.receiverEmail}
+                  </p>
                 </div>
               ))}
               {isEditing && (
@@ -365,7 +376,7 @@ const Profile = () => {
                   Add New Address
                 </button>
               )}
-              <div className='flex items-center justify-end mt-4'>
+              <div className='flex items-center justify-end mt-4 gap-2'>
                 {isEditing && (
                   <>
                     <Button

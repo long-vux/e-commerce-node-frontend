@@ -20,6 +20,7 @@ import Search_product from './Search_product'
 import { Drawer, IconButton } from '@mui/material'
 
 const Header = () => {
+
   const apiUrl = process.env.REACT_APP_API_URL
   const navigate = useNavigate()
   const [cartItems, setCartItems] = useState([])
@@ -70,23 +71,35 @@ const Header = () => {
       document.removeEventListener('mousedown', handleCloseCart)
     }
   }, [isCartVisible, handleCloseCart])
-  useEffect(() => {
-    const fetchCartItems = async () => {
-      try {
-        const response = await axios.get(`${apiUrl}api/cart/get-minicart`, {
-          withCredentials: true
-        });
-        setCartItems(response.data.items || []); // Ensure it's an empty array if no items are fetched
-      } catch (error) {
-        console.error('Failed to fetch cart items:', error);
-      }
-    };
+
+  const fetchCartItems = async () => {
+    const token = localStorage.getItem('token');
+    const cleanToken = token?.replace(/['"]/g, '');
+    console.log('cleanToken', cleanToken)
   
-    if (user) {
-      fetchCartItems();
+    // Define the configuration object for axios
+    const config = cleanToken
+      ? {
+          headers: {
+            Authorization: `Bearer ${cleanToken}`,
+          },
+        }
+      : {};
+  
+    try {
+      // Make the API request with the configured headers (if any)
+      const response = await axios.get(`${apiUrl}api/cart/get-cart`, config, {withCredentials: true})
+      console.log('minicart', response.data);
+      setCartItems(response.data.cart.items || []); // Ensure it's an empty array if no items are fetched
+    } catch (error) {
+      console.error('Failed to fetch cart items:', error);
     }
-  }, [apiUrl, user]); // Removed axios dependency
+  };
   
+  useEffect(() => {
+    fetchCartItems();
+  }, [apiUrl]);
+
   const handleSearchClick = () => {
     setIsSearchVisible(true)
   }
@@ -96,6 +109,7 @@ const Header = () => {
   }
 
   const handleCartClick = () => {
+    fetchCartItems()
     setIsCartVisible(prev => !prev)
   }
 
