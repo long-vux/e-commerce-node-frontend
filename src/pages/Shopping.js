@@ -88,7 +88,7 @@ const Shopping = () => {
     },
     {
       label: 'Price Range',
-      subLabels: ['Under $20', '$20 - $50', '$50 - $100', 'Over $100']
+subLabels: ['Under 100.000VND', '100.000VND - 500.000VND', '500.000VND - 1.000.000VND', 'Over 1.000.000VND']
     },
     {
       label: 'Color',
@@ -165,12 +165,12 @@ const Shopping = () => {
       const matchesPrice =
         selectedFilters[1].length === 0 ||
         selectedFilters[1].some(selected => {
-          if (selected === 'Under $20') return product.price < 20
-          if (selected === '$20 - $50')
-            return product.price >= 20 && product.price <= 50
-          if (selected === '$50 - $100')
-            return product.price > 50 && product.price <= 100
-          if (selected === 'Over $100') return product.price > 100
+          if (selected === 'Under 100.000VND') return product.price < 100000
+          if (selected === '100.000VND - 500.000VND')
+            return product.price >= 100000 && product.price <= 500000
+          if (selected === '500.000VND - 1.000.000VND')
+            return product.price > 500000 && product.price <= 1000000
+          if (selected === 'Over 1.000.000VND') return product.price > 1000000
           return false
         })
 
@@ -182,7 +182,7 @@ const Shopping = () => {
   const sortedProducts = () => {
     switch (sortOption) {
       case 'Price, low to high':
-        return [...filterProducts()].sort((a, b) => a.price - b.price)
+return [...filterProducts()].sort((a, b) => a.price - b.price)
       case 'Price, high to low':
         return [...filterProducts()].sort((a, b) => b.price - a.price)
       default:
@@ -259,7 +259,7 @@ const Shopping = () => {
                         </ListItemButton>
                       ))}
                     </List>
-                  </Collapse>
+</Collapse>
                 </div>
               ))}
             </List>

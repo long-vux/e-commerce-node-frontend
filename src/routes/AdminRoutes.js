@@ -1,20 +1,33 @@
-import React, { useEffect, useContext } from 'react'
-import { Routes, Route } from 'react-router-dom'
-import Dashboard from '../Admin/Dashboard'
-import Layout from '../components/admin/layout/Layout'
-import Product from '../Admin/Product'
-import Order from '../Admin/Order'
-import Coupon from '../Admin/Coupon'
-import User from '../Admin/User'
-import { UserContext } from '../contexts/UserContext'
-import { Navigate } from 'react-router-dom'
+import React, { useEffect, useContext } from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import {jwtDecode } from 'jwt-decode';
+import Dashboard from '../Admin/Dashboard';
+import Layout from '../components/admin/layout/Layout';
+import Product from '../Admin/Product';
+import Order from '../Admin/Order';
+import Coupon from '../Admin/Coupon';
+import User from '../Admin/User';
 
 const AdminRoutes = () => {
   // admin only
-  const { user } = useContext(UserContext)
-  if (!user || user.role !== 'admin') {
-    return <Navigate to='/login' />
+  const token = localStorage.getItem('token');
+  
+  // Check if there's a token and decode it
+  let isAdmin = false;
+  if (token) {
+    try {
+      const decodedToken = jwtDecode(token);
+      isAdmin = decodedToken.role === 'admin';  // Check if the role is 'admin'
+    } catch (error) {
+      console.error('Token decoding failed', error);
+    }
   }
+
+  // If user is not admin, redirect them to login or other route
+  if (!isAdmin) {
+    return <Navigate to="/" />;
+  }
+
   return (
     <Routes>
       <Route
@@ -53,12 +66,12 @@ const AdminRoutes = () => {
         path='/user'
         element={
           <Layout>
-            <User/>
+            <User />
           </Layout>
         }
       />
     </Routes>
-  )
-}
+  );
+};
 
-export default AdminRoutes
+export default AdminRoutes;

@@ -7,6 +7,7 @@ import {
 import { useNavigate } from 'react-router-dom'
 import useAxios from '../utils/axiosInstance'
 import { UserContext } from '../contexts/UserContext'
+import { formatCurrency } from '../utils/formatCurrency'
 
 const HistoryPurchase = () => {
   const { user, logout } = useContext(UserContext)
@@ -19,6 +20,7 @@ const HistoryPurchase = () => {
     try {
       const response = await axios.get('/api/order/get-orders-of-user')
       setOrders(response.data)
+      console.log(response.data)
     } catch (error) {
       console.log(error)
     }
@@ -100,9 +102,9 @@ const HistoryPurchase = () => {
                         {order.items[0].product.name}
                       </td>
                       <td className='border p-2'>
-                        ${order.items[0].product.price} x {order.items[0].quantity}
+                        {formatCurrency(order.items[0].product.price)} x {order.items[0].quantity}
                       </td>
-                      <td className='border p-2'>${order.total}</td>
+                      <td className='border p-2'>{formatCurrency(order.total)}</td>
                       <td className='border p-2'>{order.shippingAddress}</td>
                       <td className='border p-2'>{order.status}</td>
                       <td className='border p-2'>
