@@ -14,6 +14,7 @@ import Shopping from '../pages/Shopping'
 import ProductDetail from '../pages/ProductDetail'
 import Checkout from '../pages/Checkout'
 import HistoryPurchase from '../pages/HistoryPurchase'
+import Success from '../pages/Success.js'
 const MainRoutes = () => (
   <div className='overflow-x-hidden'>
     <Header />
@@ -30,7 +31,7 @@ const MainRoutes = () => (
       <Route path='/verify-email/:userId/:token' element={<VerifyEmail />} />
       <Route path='/history-purchase' element={<HistoryPurchase />} />
       <Route path='/order-details/:orderId' element={<OrderDetails />} />
-
+      <Route path='/success' element={<Success />} />
       <Route path='/' element={<Home />} />
       {/* Add a fallback route for unknown paths */}
       <Route path="*" element={<ErrorPage />} />

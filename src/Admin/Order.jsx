@@ -17,9 +17,8 @@ import {
   DialogActions,
   Typography,
   IconButton,
-
   Box,
-  Chip  
+  Chip
 } from '@mui/material'
 import { Visibility, Edit, Close, Delete, CheckBox } from '@mui/icons-material'
 import axios from 'axios'
@@ -35,7 +34,7 @@ const Order = () => {
   const [isDeleteOpen, setIsDeleteOpen] = useState(false)
   const [selectedOrder, setSelectedOrder] = useState(null)
   const [editedStatus, setEditedStatus] = useState('')
-  const [isUpdateStatus, setIsUpdateStatus] = useState(false)
+  const [updateStatusMap, setUpdateStatusMap] = useState({})
   const BASE_URL = process.env.REACT_APP_API_URL;
   const [currentStatus, setCurrentStatus] = useState('')
 
@@ -49,45 +48,46 @@ const Order = () => {
           Authorization: `Bearer ${cleanToken}`
         }
       })
+      console.log(response.data.data)
       setOrders(response.data.data)
-      console.log('response.data.data', response.data.data[0])
-      setCurrentStatus(response.data.data[0].status)
-      setEditedStatus(response.data.data[0].status)
+      if (response.data.data.length > 0) {
+        setCurrentStatus(response.data.data[0].status)
+        setEditedStatus(response.data.data[0].status)
+      }
     } catch (error) {
       console.error("Error fetching orders:", error)
     }
   }
 
   useEffect(() => {
-    fetchOrders() // Gọi API khi component mount
+    fetchOrders()
   }, [])
 
-  const handleChangeStatus = (e) => {
+  const handleChangeStatus = (e, orderId) => {
     const newStatus = e.target.value;
-    console.log('e.target.value', newStatus);
-    console.log('currentStatus', currentStatus);
-  
-    setEditedStatus(newStatus);
-  
-    // Compare the new status (e.target.value) with currentStatus
-    if (newStatus !== currentStatus) {
-      setIsUpdateStatus(true);
-    } else {
-      setIsUpdateStatus(false);
-    }
+
+    setEditedStatus((prev) => ({
+      ...prev,
+      [orderId]: newStatus,
+    }));
+
+    setUpdateStatusMap((prev) => ({
+      ...prev,
+      [orderId]: orders.find(order => order._id === orderId)?.status !== newStatus,
+    }));
   };
-  
+
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage)
   }
 
-  const handleChangeRowsPerPage = event => {
+  const handleChangeRowsPerPage = (event) => {
     setRowsPerPage(parseInt(event.target.value, 10))
     setPage(0)
   }
 
-  const openDetails = order => {
+  const openDetails = (order) => {
     setSelectedOrder(order)
     setIsDetailsOpen(true)
   }
@@ -97,7 +97,7 @@ const Order = () => {
     setIsDetailsOpen(false)
   }
 
-  const openDelete = order => {
+  const openDelete = (order) => {
     setSelectedOrder(order)
     setIsDeleteOpen(true)
   }
@@ -125,43 +125,36 @@ const Order = () => {
       console.error("Error deleting order:", error)
     }
   }
-
   const handleUpdateStatus = async (orderId) => {
     try {
-      const response = await axios.put(`${BASE_URL}api/order/${orderId}`, { status: editedStatus }, {
-        headers: {
-          Authorization: `Bearer ${cleanToken}`
+      const newStatus = editedStatus[orderId];
+      const response = await axios.put(
+        `${BASE_URL}api/order/${orderId}`,
+        { status: newStatus },
+        {
+          headers: {
+            Authorization: `Bearer ${cleanToken}`,
+          },
         }
-      })
-      console.log('response', response)
+      );
       if (response.status === 200) {
-        toast.success('Order status updated successfully')
-        fetchOrders()
-        setIsUpdateStatus(false)
+        toast.success('Order status updated successfully');
+        fetchOrders();
+        setEditedStatus((prev) => ({
+          ...prev,
+          [orderId]: undefined, // Reset to undefined after updating
+        }));
+        setUpdateStatusMap((prev) => ({
+          ...prev,
+          [orderId]: false,
+        }));
       } else {
-        toast.error('Failed to update order status')
+        toast.error('Failed to update order status');
       }
     } catch (error) {
-      console.error("Error updating order status:", error)
+      console.error('Error updating order status:', error);
     }
-  }
-
-  const getStatusColor = status => {
-    switch (status) {
-      case 'pending':
-        return 'warning'
-      case 'confirmed':
-        return 'info'
-      case 'shipped':
-        return 'primary'
-      case 'delivered':
-        return 'success'
-      case 'cancelled':
-        return 'error'
-      default:
-        return 'default'
-    }
-  }
+  };
 
   return (
     <Box p={3}>
@@ -196,38 +189,35 @@ const Order = () => {
           <TableBody>
             {orders
               .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-              .map(order => (
-                <TableRow key={order.user._id}>
-                  <TableCell>{order.user._id}</TableCell>
-                  <TableCell>{order.user.email}</TableCell>
+              .map((order) => (
+                <TableRow key={order._id}>
+                  <TableCell>{order._id}</TableCell>
+                  <TableCell>{order.user?.email}</TableCell>
                   <TableCell>{formatCurrency(order.total)}</TableCell>
                   <TableCell>
                     <Select
-                      value={editedStatus}
-                      onChange={handleChangeStatus}
+                      value={editedStatus[order._id] || order.status}
+                      onChange={(e) => handleChangeStatus(e, order._id)}
                       fullWidth
                     >
-                      <MenuItem value='pending'>Pending</MenuItem>
-                      <MenuItem value='confirmed'>Confirmed</MenuItem>
-                      <MenuItem value='shipped'>Shipped</MenuItem>
-                      <MenuItem value='delivered'>Delivered</MenuItem>
-                      <MenuItem value='cancelled'>Cancelled</MenuItem>
+                      <MenuItem value="pending">Pending</MenuItem>
+                      <MenuItem value="confirmed">Confirmed</MenuItem>
+                      <MenuItem value="delivered">Delivered</MenuItem>
+                      <MenuItem value="cancelled">Cancelled</MenuItem>
                     </Select>
+
                   </TableCell>
                   <TableCell>
                     {new Date(order.createdAt).toLocaleDateString()}
                   </TableCell>
                   <TableCell>
-                    <IconButton
-                      onClick={() => openDetails(order)}
-                      color='default'
-                    >
+                    <IconButton onClick={() => openDetails(order)} color='default'>
                       <Visibility />
                     </IconButton>
                     <IconButton onClick={() => openDelete(order)} color='default'>
                       <Delete />
                     </IconButton>
-                    {isUpdateStatus && (
+                    {updateStatusMap[order._id] && (
                       <IconButton onClick={() => handleUpdateStatus(order._id)} color='error'>
                         <CheckBox />
                       </IconButton>
@@ -267,15 +257,16 @@ const Order = () => {
               <Close />
             </IconButton>
           </DialogTitle>
+
           <DialogContent sx={{ padding: 3 }}>
             <Typography variant='body1' color='textSecondary' gutterBottom>
-              Name: {selectedOrder.user.name}
+              Name: {selectedOrder.receiverName}
             </Typography>
             <Typography variant='body1' color='textSecondary' gutterBottom>
-              Email: {selectedOrder.user.email}
+              Email: {selectedOrder.receiverEmail}
             </Typography>
             <Typography variant='body1' color='textSecondary' gutterBottom>
-              Phone: {selectedOrder.user.phone}
+              Phone: {selectedOrder.receiverPhone}
             </Typography>
             <Typography variant='body1' color='textSecondary' gutterBottom>
               Shipping Address: {selectedOrder.shippingAddress}

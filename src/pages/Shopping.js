@@ -88,7 +88,7 @@ const Shopping = () => {
     },
     {
       label: 'Price Range',
-      subLabels: ['Under $20', '$20 - $50', '$50 - $100', 'Over $100']
+      subLabels: ['Under 50000đ', '50000đ - 100000đ', '100000đ - 300000đ', 'Over 300000đ']
     },
     {
       label: 'Color',
@@ -165,12 +165,12 @@ const Shopping = () => {
       const matchesPrice =
         selectedFilters[1].length === 0 ||
         selectedFilters[1].some(selected => {
-          if (selected === 'Under $20') return product.price < 20
-          if (selected === '$20 - $50')
-            return product.price >= 20 && product.price <= 50
-          if (selected === '$50 - $100')
-            return product.price > 50 && product.price <= 100
-          if (selected === 'Over $100') return product.price > 100
+          if (selected === 'Under 50000đ') return product.price < 50000
+          if (selected === '50000đ - 100000đ')
+            return product.price >= 50000 && product.price <= 100000
+          if (selected === '100000đ - 300000đ')
+            return product.price >= 100000 && product.price <= 300000
+          if (selected === 'Over 300000đ') return product.price > 300000
           return false
         })
 
