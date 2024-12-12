@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import useAxios from '../utils/axiosInstance'
+import { formatCurrency } from '../utils/formatCurrency'
 
 const OrderDetails = () => {
   const { orderId } = useParams()
@@ -38,7 +39,7 @@ const OrderDetails = () => {
       <h1 className='text-3xl font-bold mb-4'>Order Details</h1>
       <div className='p-6 border border-gray-300'>
         <h2 className='text-xl font-bold mb-4'>Order ID: {order._id}</h2>
-        <p><strong>Order Total:</strong> ${order.total}</p>
+        <p><strong>Order Total:</strong> {formatCurrency(order.total)}</p>
         <p><strong>Shipping Address:</strong> {order.shippingAddress}</p>
         <p><strong>Status:</strong> {order.status}</p>
         <p><strong>Order Date:</strong> {new Date(order.createdAt).toLocaleString()}</p>
@@ -66,9 +67,9 @@ const OrderDetails = () => {
                   />
                 </td>
                 <td className='border p-2'>{item.product.name}</td>
-                <td className='border p-2'>${item.product.price}</td>
+                <td className='border p-2'>{formatCurrency(item.product.price)}</td>
                 <td className='border p-2'>{item.quantity}</td>
-                <td className='border p-2'>${item.price}</td>
+                <td className='border p-2'>{formatCurrency(item.price)}</td>
                 <td className='border p-2'>{item.variant}</td>
               </tr>
             ))}

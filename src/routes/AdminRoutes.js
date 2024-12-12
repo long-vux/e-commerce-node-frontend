@@ -1,31 +1,19 @@
-import React, { useEffect, useContext } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
-import {jwtDecode } from 'jwt-decode';
-import Dashboard from '../Admin/Dashboard';
-import Layout from '../components/admin/layout/Layout';
-import Product from '../Admin/Product';
-import Order from '../Admin/Order';
-import Coupon from '../Admin/Coupon';
-import User from '../Admin/User';
-
+import React from 'react'
+import { Routes, Route } from 'react-router-dom'
+import Dashboard from '../Admin/Dashboard'
+import Layout from '../components/admin/layout/Layout'
+import Product from '../Admin/Product'
+import Order from '../Admin/Order'
+import Coupon from '../Admin/Coupon'
+import User from '../Admin/User'
+import { Navigate } from 'react-router-dom'
+import {jwtDecode} from 'jwt-decode'
 const AdminRoutes = () => {
-  // admin only
-  const token = localStorage.getItem('token');
-  
-  // Check if there's a token and decode it
-  let isAdmin = false;
-  if (token) {
-    try {
-      const decodedToken = jwtDecode(token);
-      isAdmin = decodedToken.role === 'admin';  // Check if the role is 'admin'
-    } catch (error) {
-      console.error('Token decoding failed', error);
-    }
-  }
 
-  // If user is not admin, redirect them to login or other route
-  if (!isAdmin) {
-    return <Navigate to="/" />;
+  const token = localStorage.getItem('token')
+  const decodedToken = jwtDecode(token)
+  if (decodedToken.role !== 'admin') {
+    return <Navigate to='/' />
   }
 
   return (

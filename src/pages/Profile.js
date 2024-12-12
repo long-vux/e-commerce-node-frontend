@@ -48,6 +48,7 @@ const Profile = () => {
   const [street, setStreet] = useState('')
   const [receiverName, setReceiverName] = useState('')
   const [receiverPhone, setReceiverPhone] = useState(user?.phone || '')
+  const [receiverEmail, setReceiverEmail] = useState('')
   const [districtId, setDistrictId] = useState(null) // for GHN
   const [error, setError] = useState('')
 
@@ -129,7 +130,8 @@ const Profile = () => {
         !selectedWard ||
         !street ||
         !receiverName ||
-        !receiverPhone
+        !receiverPhone ||
+        !receiverEmail
       ) {
         toast.error('Please fill in all required fields')
         return
@@ -145,6 +147,7 @@ const Profile = () => {
             street,
             receiverName,
             receiverPhone,
+            receiverEmail,
             districtId
           }
         )
@@ -159,6 +162,7 @@ const Profile = () => {
             street,
             receiverName,
             receiverPhone,
+            receiverEmail,
             districtId
           }
         )
@@ -190,6 +194,7 @@ const Profile = () => {
     setCurrentAddressId(address._id)
     setReceiverName(address.receiverName)
     setReceiverPhone(address.receiverPhone)
+    setReceiverEmail(address.receiverEmail)
     setSelectedProvince(address.province)
     setSelectedDistrict(address.district)
     setSelectedWard(address.ward)
@@ -202,6 +207,7 @@ const Profile = () => {
     setIsEditMode(false)
     setReceiverName('')
     setReceiverPhone(user?.phone || '')
+    setReceiverEmail('')
     setSelectedProvince('')
     setSelectedDistrict('')
     setSelectedWard('')
@@ -215,6 +221,7 @@ const Profile = () => {
     setCurrentAddressId(null)
     setReceiverName('')
     setReceiverPhone(user?.phone || '')
+    setReceiverEmail('')
     setDistrictId(null)
     setSelectedProvince('')
     setSelectedDistrict('')
@@ -320,6 +327,7 @@ const Profile = () => {
                   fullWidth
                   variant='outlined'
                 />
+
               </div>
 
               <h3 className='text-lg font-semibold mb-2'>Shipping Addresses</h3>
@@ -353,6 +361,9 @@ const Profile = () => {
                   </p>
                   <p>
                     <strong>Receiver Phone:</strong> {address.receiverPhone}
+                  </p>
+                  <p>
+                    <strong>Receiver Email:</strong> {address.receiverEmail}
                   </p>
                 </div>
               ))}
@@ -427,6 +438,13 @@ const Profile = () => {
             label='Receiver Phone'
             value={receiverPhone}
             onChange={e => setReceiverPhone(e.target.value)}
+            fullWidth
+            margin='normal'
+          />
+          <TextField
+            label='Receiver Email'
+            value={receiverEmail}
+            onChange={e => setReceiverEmail(e.target.value)}
             fullWidth
             margin='normal'
           />

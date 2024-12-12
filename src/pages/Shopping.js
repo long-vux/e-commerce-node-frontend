@@ -88,7 +88,7 @@ const Shopping = () => {
     },
     {
       label: 'Price Range',
-subLabels: ['Under 100.000VND', '100.000VND - 500.000VND', '500.000VND - 1.000.000VND', 'Over 1.000.000VND']
+      subLabels: ['Under 50000đ', '50000đ - 100000đ', '100000đ - 300000đ', 'Over 300000đ']
     },
     {
       label: 'Color',
@@ -165,12 +165,12 @@ subLabels: ['Under 100.000VND', '100.000VND - 500.000VND', '500.000VND - 1.000.0
       const matchesPrice =
         selectedFilters[1].length === 0 ||
         selectedFilters[1].some(selected => {
-          if (selected === 'Under 100.000VND') return product.price < 100000
-          if (selected === '100.000VND - 500.000VND')
-            return product.price >= 100000 && product.price <= 500000
-          if (selected === '500.000VND - 1.000.000VND')
-            return product.price > 500000 && product.price <= 1000000
-          if (selected === 'Over 1.000.000VND') return product.price > 1000000
+          if (selected === 'Under 50000đ') return product.price < 50000
+          if (selected === '50000đ - 100000đ')
+            return product.price >= 50000 && product.price <= 100000
+          if (selected === '100000đ - 300000đ')
+            return product.price >= 100000 && product.price <= 300000
+          if (selected === 'Over 300000đ') return product.price > 300000
           return false
         })
 
