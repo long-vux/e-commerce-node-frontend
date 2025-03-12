@@ -1,6 +1,20 @@
-# Getting Started with Create React App
+# E-commerce App Frontend
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This project is the frontend of an E-commerce application built using modern web technologies, including React.js, Tailwind CSS, and Material-UI (MUI). It provides a seamless and responsive shopping experience for users.
+
+## Technologies Used
+- **React.js**: A JavaScript library for building user interfaces.
+- **Tailwind CSS**: A utility-first CSS framework for designing responsive and modern UIs.
+- **Material-UI (MUI)**: A React component library for implementing Google's Material Design.
+- **React Router**: For handling navigation between different pages.
+- **Axios**: For API requests and data fetching.
+
+## Features
+- **Product Listings**: Browse a wide range of products.
+- **Product Details**: View detailed information about a product.
+- **Shopping Cart**: Add, remove, and update cart items.
+- **User Authentication**: Sign up, log in, and manage user profiles.
+- **Responsive Design**: Fully optimized for mobile and desktop.
 
 ## Available Scripts
 
@@ -26,6 +40,8 @@ It correctly bundles React in production mode and optimizes the build for the be
 
 The build is minified, and the filenames include hashes.\
 Your app is ready to be deployed!
+
+See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
 
 ### `npm run eject`
 
